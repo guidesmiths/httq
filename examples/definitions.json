@@ -1,32 +1,32 @@
 {
     "vhosts": {
-        "jobs": {
+        "example": {
             "connection": {
-                "vhost": "jobs"
+                "vhost": "example"
             },
             "exchanges": {
-                "systems": {
+                "gateway": {
                 }
             },
             "queues": {
-                 "systems_snoop": {
+                 "demo": {
                     "options": {
                         "maxLength": 100
                     }
                  }
             },
             "bindings": {
-                "systems:snoop": {
-                    "source": "systems",
-                    "destination": "systems_snoop"
+                "gateway:demo": {
+                    "source": "gateway",
+                    "destination": "demo"
                 }
             }
         }
     },
     "publications": {
-        "universe": {
-            "vhost": "jobs",
-            "exchange": "systems",
+        "example:gateway": {
+            "vhost": "example",
+            "exchange": "gateway",
             "confirm": true
         }
     }

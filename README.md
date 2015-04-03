@@ -29,10 +29,10 @@ rascal.createBroker(config, function(err, broker) {
 
     var app = express();
     app.use(bodyParser.json())
-    app.post('*', httq.fireAndForget(broker, 'universe'))
+    app.post('*', httq.fireAndForget(broker, 'example:gateway'))
     app.listen(3000)
 
-    console.log('Try: curl -H "Content-Type: application/json" -X POST -d \'{"foo":"bar"}\' http://localhost:3000')
+    console.log('Try: curl -H "Content-Type: application/json" -X POST -d \'{"message":"Hello World"}\' http://localhost:3000/messages/greetings')
 })
 
 ```
