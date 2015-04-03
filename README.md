@@ -16,7 +16,7 @@ var rascal = require('rascal')
 var express = require('express')
 var bodyParser = require('body-parser')
 
-// See the Rascal docs for configuring your definitions file
+// See the Rascal docs for help configuring your definitions file
 var definitions = require('./definitions.json')
 var config = rascal.withDefaultConfig(definitions)
 
@@ -55,15 +55,15 @@ It should look something like this:
         "deliveryMode": 2,
         "messageId": "1498ac51-6067-4084-8f18-1b8fac50f9ef"
     },
-    "content": {  
-        "headers":{  
+    "content": {
+        "headers":{
             "user-agent":"curl/7.30.0",
             "host":"localhost:3000",
             "accept":"*/*",
             "content-type":"application/json",
             "content-length":"25"
         },
-        "body":{  
+        "body":{
             "message":"Hello World"
         }
     }
