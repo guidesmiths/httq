@@ -19,7 +19,6 @@ var bodyParser = require('body-parser')
 
 // See the Rascal docs for configuring your definitions file
 var definitions = require('./definitions.json')
-
 var config = rascal.withDefaultConfig(definitions)
 
 rascal.createBroker(config, function(err, broker) {
