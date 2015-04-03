@@ -8,7 +8,9 @@ npm install httq
 * RabbitMQ
 * Familiarity with [Rascal](https://github.com/guidesmiths/rascal)
 
-## Usage
+##
+
+## Example
 ```js
 var httq = require('httq')
 var rascal = require('rascal')
