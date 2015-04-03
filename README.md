@@ -38,7 +38,8 @@ $ node server.js &
 $ curl -H "Content-Type: application/json" -X POST -d \'{"message":"Hello World"}\' http://localhost:3000/messages/greetings
 {"txid":"1498ac51-6067-4084-8f18-1b8fac50f9ef"}
 ```
-### Step 3 - Check your broker for the message. It should look something like this:
+### Step 3 - Check your broker for the message.
+It should look something like this:
 ```json
 {
     "fields": {
