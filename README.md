@@ -66,7 +66,7 @@ The queued message will be approximately* as follows
     }
 }
 ```
-The message content will actually be a buffer, but if you use Rascal to consume the message it will automatically decoded and provide via the content parameter, e.g.
+The message content will actually be a buffer, but if you use Rascal to consume the message it will automatically decoded and provided via the content parameter, e.g.
 ```js
 broker.subscribe("s1", function(err, rawMessage, content) {
     ...
