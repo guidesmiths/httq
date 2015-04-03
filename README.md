@@ -8,9 +8,8 @@ npm install httq
 * RabbitMQ
 * Familiarity with [Rascal](https://github.com/guidesmiths/rascal)
 
-##
-
-## Example Usage
+## Usage
+### Step 1 - Plug httq into an express app
 ```js
 var httq = require('httq')
 var rascal = require('rascal')
@@ -31,12 +30,15 @@ rascal.createBroker(config, function(err, broker) {
     app.use(bodyParser.json())
     app.post('*', httq.fireAndForget(broker, 'example:gateway'))
     app.listen(3000)
-
-    console.log('Try: curl -H "Content-Type: application/json" -X POST -d \'{"message":"Hello World"}\' http://localhost:3000/messages/greetings')
 })
-
 ```
-The queued message will be approximately* as follows
+### Step 2 - Start the app and send it an HTTP request
+```json
+$ node server.js &
+$ curl -H "Content-Type: application/json" -X POST -d \'{"message":"Hello World"}\' http://localhost:3000/messages/greetings
+{"txid":"1498ac51-6067-4084-8f18-1b8fac50f9ef"}
+```
+### Step 3 - Check your broker for the message. It should look something like this:
 ```json
 {
     "fields": {
@@ -50,7 +52,7 @@ The queued message will be approximately* as follows
         "contentType": "application/json",
         "headers": {},
         "deliveryMode": 2,
-        "messageId": "c0f8feca-97ff-4ff3-8cc9-49c5ff61c877"
+        "messageId": "1498ac51-6067-4084-8f18-1b8fac50f9ef"
     },
     "content": {  
         "headers":{  
@@ -65,10 +67,4 @@ The queued message will be approximately* as follows
         }
     }
 }
-```
-The message content will actually be a buffer, but if you use Rascal to consume the message it will automatically decoded and provided via the content parameter, e.g.
-```js
-broker.subscribe("s1", function(err, rawMessage, content) {
-    ...
-})
 ```
