@@ -10,7 +10,7 @@ npm install httq
 
 ##
 
-## Example
+## Example Usage
 ```js
 var httq = require('httq')
 var rascal = require('rascal')
