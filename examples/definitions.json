@@ -1,0 +1,33 @@
+{
+    "vhosts": {
+        "jobs": {
+            "connection": {
+                "vhost": "jobs"
+            },
+            "exchanges": {
+                "systems": {
+                }
+            },
+            "queues": {
+                 "systems_snoop": {
+                    "options": {
+                        "maxLength": 100
+                    }
+                 }
+            },
+            "bindings": {
+                "systems:snoop": {
+                    "source": "systems",
+                    "destination": "systems_snoop"
+                }
+            }
+        }
+    },
+    "publications": {
+        "universe": {
+            "vhost": "jobs",
+            "exchange": "systems",
+            "confirm": true
+        }
+    }
+}
