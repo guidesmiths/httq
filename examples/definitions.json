@@ -1,9 +1,6 @@
 {
     "vhosts": {
         "example": {
-            "connection": {
-                "vhost": "example"
-            },
             "exchanges": {
                 "gateway": {
                 }
