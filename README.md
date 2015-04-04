@@ -89,6 +89,7 @@ var toRoutingKey = httq.transformerspathToRoutingKey({
         DELETE: 'deleted'
     }
 })
+```
 If you chose not to specify the alt options, the method will be converted to lower case.
 
 ### Request to Routing Key
