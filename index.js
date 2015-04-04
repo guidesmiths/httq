@@ -1,3 +1,4 @@
 module.exports = {
-    fireAndForget: require('./lib/middleware/fireAndForget')
+    middleware: require('./lib/middleware'),
+    transformers: require('./lib/transformers')
 }
