@@ -155,7 +155,6 @@ Path to routing key replaces slashes\(/\) with full stops\(.\) and strips off th
 ```
 If you don't need the headers and would prefer to send the body directly, enable ```body_only``` in the transformer options
 ```js
-{
 var toRoutingKey = httq.transformerspathToRoutingKey({
     body_only: true
 }
