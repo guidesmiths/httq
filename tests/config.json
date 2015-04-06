@@ -1,0 +1,90 @@
+{
+    "rascal": {
+        "vhosts": {
+            "/": {
+                "namespace": true,
+                "exchanges": {
+                    "e1": {}
+                },
+                "queues": {
+                    "q1": {}
+                },
+                "bindings": {
+                    "b1": {
+                        "source": "e1",
+                        "destination": "q1"
+                    }
+                }
+            }
+        },
+        "publications": {
+            "p1": {
+                "exchange": "e1"
+            }
+        },
+        "subscriptions": {
+            "s1": {
+                "queue": "q1"
+            }
+        }
+    },
+    "httq": {
+        "destinations": {
+            "d1": {
+                "name": "d1",
+                "publisher": "x1",
+                "transformer": "t1",
+                "publication": "p1"
+            },
+            "d2": {
+                "name": "d2",
+                "publisher": "x1",
+                "transformer": "t2",
+                "publication": "p1"
+            },
+            "d3": {
+                "name": "d3",
+                "publisher": "x1",
+                "transformer": "t3",
+                "publication": "p1"
+            }
+
+        },
+        "publishers": {
+            "x1": {
+                "type": "fireAndForget"
+            }
+        },
+        "transformers": {
+            "t1": {
+                "type": "pathToRoutingKey"
+            },
+            "t2": {
+                "type": "pathToRoutingKey",
+                "options": {
+                    "method": true,
+                    "alt": {
+                        "GET": "requested",
+                        "POST": "created",
+                        "PUT": "amended",
+                        "DELETE": "deleted"
+                    }
+                }
+            },
+            "t3": {
+                "type": "requestToRoutingKey",
+                "options": {
+                    "pattern": "/api/:system/:version/:entity",
+                    "template": "{{params.system}}.{{params.version}}.{{params.entity}}.{{method_alt}}",
+                    "alt": {
+                        "GET": "requested",
+                        "POST": "created",
+                        "PUT": "amended",
+                        "DELETE": "deleted"
+                    }
+                }
+            }
+        }
+    }
+
+}

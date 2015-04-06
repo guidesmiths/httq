@@ -5,8 +5,7 @@ var request = require('request')
 var express = require('express')
 var bodyParser = require('body-parser')
 var async = require('async')
-var definitions = require('./definitions.json')
-
+var config = require('./config.json')
 var httq = require('..')
 
 describe('httq', function() {
@@ -14,41 +13,24 @@ describe('httq', function() {
     var broker
     var server
 
-
     beforeEach(function(done) {
-        var config = rascal.withTestConfig(definitions)
-
-        async.series([
+        async.waterfall([
             function(cb) {
-                rascal.createBroker(config, function(err, _broker) {
+                rascal.createBroker(rascal.withTestConfig(config.rascal), function(err, _broker) {
                     if (err) return cb(err)
                     broker = _broker
-                    cb()
+                    cb(null, broker)
                 })
             },
-            function(cb) {
+            function(broker, cb) {
+                cb(null, httq(broker, undefined, undefined, config.httq))
+            },
+            function(httq, cb) {
                 var app = express();
                 app.use(bodyParser.json())
-                app.get('/api/library/v1/books', httq.middleware.fireAndForget(broker, 'p1', httq.transformers.pathToRoutingKey()))
-                app.get('/api/library/v2/books', httq.middleware.fireAndForget(broker, 'p1', httq.transformers.pathToRoutingKey({
-                    method: true,
-                    alt: {
-                        GET: 'requested',
-                        POST: 'created',
-                        PUT: 'amended',
-                        DELETE: 'deleted'
-                    }
-                })))
-                app.post('/api/library/v3/books', httq.middleware.fireAndForget(broker, 'p1', httq.transformers.requestToRoutingKey({
-                    pattern: '/api/:system/:version/:entity',
-                    template: '{{params.system}}.{{params.version}}.{{params.entity}}.{{method_alt}}',
-                    alt: {
-                        GET: 'requested',
-                        POST: 'created',
-                        PUT: 'amended',
-                        DELETE: 'deleted'
-                    }
-                })))
+                app.get('/api/library/v1/books', httq('d1'))
+                app.get('/api/library/v2/books', httq('d2'))
+                app.post('/api/library/v3/books', httq('d3'))
                 server = app.listen(3000, cb)
             }
         ], done)
