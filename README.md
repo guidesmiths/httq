@@ -92,14 +92,12 @@ rascal.createBroker(rascalConfig, function(err, broker) {
     }
 }
 ```
-
 ### Step 3 - Start the app and send it an HTTP request
 ```json
 $ node server.js &
 $ curl -H "Content-Type: application/json" -X POST -d \'{"message":"Hello World"}\' http://localhost:3000/messages/greetings
 {"txid":"1498ac51-6067-4084-8f18-1b8fac50f9ef"}
 ```
-
 ### Step 4 - Check your broker for the message.
 It should look something like this:
 ```json
@@ -131,7 +129,6 @@ It should look something like this:
     }
 }
 ```
-
 ## Transformers
 Transformers convert the inbound HTTP request into the outbound AMQP message. Their output must be an object containing two properties
 ```js
@@ -141,6 +138,7 @@ Transformers convert the inbound HTTP request into the outbound AMQP message. Th
         anything: "you want to send, but typically request headers and body"
     }
 }
+```
 httq provides two out of the box transformers, pathToRoutingKey and requestToRoutingKey.
 
 ### pathToRoutingKey transformer
