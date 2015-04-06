@@ -47,6 +47,18 @@
                 "publisher": "x1",
                 "transformer": "t3",
                 "publication": "p1"
+            },
+            "d4": {
+                "name": "d4",
+                "publisher": "x1",
+                "transformer": "t4",
+                "publication": "p1"
+            },
+            "d5": {
+                "name": "d5",
+                "publisher": "x1",
+                "transformer": "t5",
+                "publication": "p1"
             }
 
         },
@@ -72,6 +84,12 @@
                 }
             },
             "t3": {
+                "type": "pathToRoutingKey",
+                "options": {
+                    "body_only": true
+                }
+            },
+            "t4": {
                 "type": "requestToRoutingKey",
                 "options": {
                     "pattern": "/api/:system/:version/:entity",
@@ -82,6 +100,14 @@
                         "PUT": "amended",
                         "DELETE": "deleted"
                     }
+                }
+            },
+            "t5": {
+                "type": "requestToRoutingKey",
+                "options": {
+                    "pattern": "/api/:system/:version/:entity",
+                    "template": "{{params.system}}.{{params.version}}.{{params.entity}}.{{method_alt}}",
+                    "body_only": true
                 }
             }
         }
