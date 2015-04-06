@@ -144,7 +144,25 @@ Transformers convert the inbound HTTP request into the outbound AMQP message. Th
 httq provides two out of the box transformers, pathToRoutingKey and requestToRoutingKey.
 
 ### pathToRoutingKey transformer
-Path to routing key replaces slashes\(/\) with full stops\(.\) and strips off the initial slash. It's a reasonable choice but would limited if you're bridging a RESTful interface that makes use of HTTP verbs. To work around this situation you can configure the transformer to append the method and even to substitute the method for a human friendly alternative.
+Path to routing key replaces slashes\(/\) with full stops\(.\) and strips off the initial slash. By default the published message with container the http request headers and body
+```json
+{
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "body": {
+        "foo": "bar"
+    }
+}
+```
+If you don't need the headers and would prefer to send the body directly, enable ```body_only``` in the transformer options
+```js
+{
+var toRoutingKey = httq.transformerspathToRoutingKey({
+    body_only: true
+}
+```
+The pathToRoutingKey transformer is a reasonable choice but somewhat limited if you're bridging a RESTful interface that makes use of HTTP verbs. To work around this situation you can configure the transformer to append the method and even to substitute the method for a human friendly alternative.
 ```js
 var toRoutingKey = httq.transformerspathToRoutingKey({
     method: true,
@@ -159,7 +177,7 @@ var toRoutingKey = httq.transformerspathToRoutingKey({
 If you chose not to specify the method_alt options, the method will be converted to lower case.
 
 ### requestToRoutingKey transformer
-Request to routing key extracts data from the HTTP method, request headers and request url (using node's url.parse and expresses url parameter algorithm). The data is used to render a [hogan](http://twitter.github.io/hogan.js/) template of yoru specification.
+Request to routing key extracts data from the HTTP method, request headers and request url (using node's url.parse and expresses url parameter algorithm). The data is used to render a [hogan](http://twitter.github.io/hogan.js/) template of your specification. It also supports the method_alt and body_only parameters.
 ```js
 var toRoutingKey = httq.transformers.requestToRoutingKey({
     pattern: '/:primary/:secondary',
@@ -169,7 +187,8 @@ var toRoutingKey = httq.transformers.requestToRoutingKey({
         POST: 'created',
         PUT: 'amended',
         DELETE: 'deleted'
-    }
+    },
+    body_only: true
 })
 
 ```
@@ -177,7 +196,6 @@ You can see the full set of available parameters [here](https://github.com/guide
 
 ## Publishers
 A publisher's job is to send the message to the AMQP broker, and to a return an appropriate HTTP response. Currently only one publisher, fireAndForget is provided but we have plans for requestAndResponse too.
-
 
 ### fireAndForget publisher
 The fire and forget publisher publishes a message to the specified destination and replies with 202 "Accepted". The body of the response contains a transaction id for tracking purposes.
