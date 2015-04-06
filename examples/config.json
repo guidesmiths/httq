@@ -1,0 +1,65 @@
+{
+    "httq": {
+        "destinations": {
+            "example_gateway": {
+                "publisher": "default",
+                "transformer": "default",
+                "publication": "example:gateway"
+            }
+        },
+        "publishers": {
+            "default": {
+                "type": "fireAndForget"
+            }
+        },
+        "transformers": {
+            "default": {
+                "type": "pathToRoutingKey",
+                "options": {
+                    "method": true,
+                    "alt": {
+                        "GET": "requested",
+                        "POST": "created",
+                        "PUT": "updated",
+                        "DELETE": "deleted"
+                    }
+                }
+            }
+        }
+    },
+    "rascal": {
+        "vhosts": {
+            "example": {
+                "connection": {
+                    "vhost": "/",
+                    "user": "guest",
+                    "password": "guest"
+                },
+                "exchanges": {
+                    "gateway": {
+                    }
+                },
+                "queues": {
+                     "demo": {
+                        "options": {
+                            "maxLength": 100
+                        }
+                     }
+                },
+                "bindings": {
+                    "gateway:demo": {
+                        "source": "gateway",
+                        "destination": "demo"
+                    }
+                }
+            }
+        },
+        "publications": {
+            "example:gateway": {
+                "vhost": "example",
+                "exchange": "gateway",
+                "confirm": true
+            }
+        }
+    }
+}

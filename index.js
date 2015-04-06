@@ -2,10 +2,11 @@ var debug = require('debug')('httq:index')
 var format = require('util').format
 var _ = require('lodash')
 
-module.exports = function(broker, publishers, transformers, config) {
+module.exports = function init(broker, libraries, config) {
+    if (arguments.length === 2) return init(broker, {}, arguments[1])
 
-    publishers = _.defaults(publishers || {}, require('./lib/publishers'))
-    transformers = _.defaults(transformers || {}, require('./lib/transformers'))
+    publishers = _.defaults(libraries.publishers || {}, require('./lib/publishers'))
+    transformers = _.defaults(libraries.transformers || {}, require('./lib/transformers'))
 
     return function(destination) {
         var destinationConfig = config.destinations[destination]

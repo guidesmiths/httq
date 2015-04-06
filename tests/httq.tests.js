@@ -23,7 +23,7 @@ describe('httq', function() {
                 })
             },
             function(broker, cb) {
-                cb(null, httq(broker, undefined, undefined, config.httq))
+                cb(null, httq(broker, config.httq))
             },
             function(httq, cb) {
                 var app = express();
