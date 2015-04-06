@@ -17,7 +17,7 @@
                 "type": "pathToRoutingKey",
                 "options": {
                     "method": true,
-                    "alt": {
+                    "method_alt": {
                         "GET": "requested",
                         "POST": "created",
                         "PUT": "updated",

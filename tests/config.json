@@ -63,7 +63,7 @@
                 "type": "pathToRoutingKey",
                 "options": {
                     "method": true,
-                    "alt": {
+                    "method_alt": {
                         "GET": "requested",
                         "POST": "created",
                         "PUT": "amended",
@@ -76,7 +76,7 @@
                 "options": {
                     "pattern": "/api/:system/:version/:entity",
                     "template": "{{params.system}}.{{params.version}}.{{params.entity}}.{{method_alt}}",
-                    "alt": {
+                    "method_alt": {
                         "GET": "requested",
                         "POST": "created",
                         "PUT": "amended",

@@ -148,7 +148,7 @@ Path to routing key replaces slashes\(/\) with full stops\(.\) and strips off th
 ```js
 var toRoutingKey = httq.transformerspathToRoutingKey({
     method: true,
-    alt: {
+    method_alt: {
         GET: 'requested',
         POST: 'created',
         PUT: 'amended',
@@ -156,7 +156,7 @@ var toRoutingKey = httq.transformerspathToRoutingKey({
     }
 })
 ```
-If you chose not to specify the alt options, the method will be converted to lower case.
+If you chose not to specify the method_alt options, the method will be converted to lower case.
 
 ### requestToRoutingKey transformer
 Request to routing key extracts data from the HTTP method, request headers and request url (using node's url.parse and expresses url parameter algorithm). The data is used to render a [hogan](http://twitter.github.io/hogan.js/) template of yoru specification.
@@ -164,7 +164,7 @@ Request to routing key extracts data from the HTTP method, request headers and r
 var toRoutingKey = httq.transformers.requestToRoutingKey({
     pattern: '/:primary/:secondary',
     template: 'api.{{headers.version}}.{{params.primary}}.{{params.secondary}}.{{method_alt}}',
-    alt: {
+    method_alt: {
         GET: 'requested',
         POST: 'created',
         PUT: 'amended',
