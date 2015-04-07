@@ -1,6 +1,7 @@
 var format = require('util').format
 var assert = require('assert')
 var _ = require('lodash')
+var async = require('async')
 var httq = require('..')
 
 describe('Pipeline', function() {
@@ -23,13 +24,13 @@ describe('Pipeline', function() {
         }
 
         httq(config, {
-            a: function(config, next) {
+            a: function(config, ctx, next) {
                 next(null, function a() {})
             },
-            b: function(config, next) {
+            b: function(config, ctx, next) {
                 next(null, function b() {})
             },
-            c: function(config, next) {
+            c: function(config, ctx, next) {
                 next(null, function c() {})
             }
         }, function(err, warez) {
@@ -56,7 +57,7 @@ describe('Pipeline', function() {
         }
 
         httq(config, {
-            a: function(options, next) {
+            a: function(options, ctx, next) {
                 next(null, function a() {
                     return options
                 })
@@ -64,6 +65,48 @@ describe('Pipeline', function() {
         }, function(err, warez) {
             assert.equal(warez[0](), config.warez.a.options)
             done()
+        })
+    })
+
+
+    it('should initialise warez with shared context', function(done) {
+
+        var config = {
+            sequence: ["a", "b"],
+            warez: {
+                a: {
+                    type: "a"
+                },
+                b: {
+                    type: "b"
+                }
+            }
+        }
+
+        var shared = {
+            z: true
+        }
+
+        httq(config, {
+            a: function(options, ctx, next) {
+                next(null, function a(cb) {
+                    ctx.a = true
+                    cb()
+                })
+            },
+            b: function(options, ctx, next) {
+                next(null, function b(cb) {
+                    ctx.b = true
+                    cb()
+                })
+            }
+        }, shared, function(err, warez) {
+            async.parallel(warez, function() {
+                assert.ok(shared.a)
+                assert.ok(shared.b)
+                assert.ok(shared.z)
+                done()
+            })
         })
     })
 })
