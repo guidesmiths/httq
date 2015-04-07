@@ -23,7 +23,7 @@ describe('Pipeline', function() {
             }
         }
 
-        httq(config, {
+        httq.init(config, {
             a: function(config, ctx, next) {
                 next(null, function a() {})
             },
@@ -56,7 +56,7 @@ describe('Pipeline', function() {
             }
         }
 
-        httq(config, {
+        httq.init(config, {
             a: function(options, ctx, next) {
                 next(null, function a() {
                     return options
@@ -67,7 +67,6 @@ describe('Pipeline', function() {
             done()
         })
     })
-
 
     it('should initialise warez with shared context', function(done) {
 
@@ -87,7 +86,7 @@ describe('Pipeline', function() {
             z: true
         }
 
-        httq(config, {
+        httq.init(config, {
             a: function(options, ctx, next) {
                 next(null, function a(cb) {
                     ctx.a = true
