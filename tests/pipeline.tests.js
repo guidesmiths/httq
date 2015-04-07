@@ -5,10 +5,9 @@ var httq = require('..')
 
 describe('Pipeline', function() {
 
-    it('should return middleware in the specified sequence', function(done) {
+    it('should return warez in the specified sequence', function(done) {
 
         var config = {
-            pattern: "/api/:system",
             sequence: ["a", "c", "b"],
             warez: {
                 a: {
@@ -24,13 +23,13 @@ describe('Pipeline', function() {
         }
 
         httq(config, {
-            a: function(next) {
+            a: function(config, next) {
                 next(null, function a() {})
             },
-            b: function(next) {
+            b: function(config, next) {
                 next(null, function b() {})
             },
-            c: function(next) {
+            c: function(config, next) {
                 next(null, function c() {})
             }
         }, function(err, warez) {
@@ -38,6 +37,32 @@ describe('Pipeline', function() {
             assert.equal(warez[0].name, 'a')
             assert.equal(warez[1].name, 'c')
             assert.equal(warez[2].name, 'b')
+            done()
+        })
+    })
+
+    it('should initialise warez with options', function(done) {
+        var config = {
+            sequence: ["a"],
+            warez: {
+                a: {
+                    type: "a",
+                    options: {
+                        foo: 1,
+                        bar: 2
+                    }
+                }
+            }
+        }
+
+        httq(config, {
+            a: function(options, next) {
+                next(null, function a() {
+                    return options
+                })
+            }
+        }, function(err, warez) {
+            assert.equal(warez[0](), config.warez.a.options)
             done()
         })
     })

@@ -8,7 +8,8 @@ module.exports = httq
 function httq(config, warez, next) {
 
     async.mapSeries(config.sequence, function(id, callback) {
-        warez[config.warez[id].type](callback)
+        var warezConfig = config.warez[id]
+        warez[warezConfig.type](warezConfig.options, callback)
     }, next)
 
 }
