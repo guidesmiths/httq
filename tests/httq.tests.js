@@ -8,7 +8,7 @@ var async = require('async')
 var config = require('./config.json')
 var httq = require('..')
 
-describe('httq', function() {
+describe.skip('httq', function() {
 
     var broker
     var server
