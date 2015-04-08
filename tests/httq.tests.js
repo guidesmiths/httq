@@ -117,9 +117,9 @@ describe('httq', function() {
                     assert.ok(message)
                     assert.equal(message.fields.routingKey, 'library.v2.books.loans.POST')
                     assert.equal(message.properties.messageId, body.txid)
-                    assert.equal(message.properties.headers.request.url, '/api/library/v2/books/978-3-16-148410-0/loans?foo=1')
-                    assert.equal(message.properties.headers.request.query.foo, 1)
-                    assert.equal(message.properties.headers.request.headers.bar, 2)
+                    assert.equal(message.properties.headers.httq.url, '/api/library/v2/books/978-3-16-148410-0/loans?foo=1')
+                    assert.equal(message.properties.headers.httq.query.foo, 1)
+                    assert.equal(message.properties.headers.httq.headers.bar, 2)
                     done()
                 }, function(err, result) {
                     assert.ifError(err)

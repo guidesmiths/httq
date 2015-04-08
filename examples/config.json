@@ -1,27 +1,33 @@
 {
     "httq": {
-        "destinations": {
-            "example_gateway": {
-                "publisher": "default",
-                "transformer": "default",
-                "publication": "example:gateway"
-            }
-        },
-        "publishers": {
-            "default": {
-                "type": "fireAndForget"
-            }
-        },
-        "transformers": {
-            "default": {
-                "type": "pathToRoutingKey",
-                "options": {
-                    "method": true,
-                    "method_alt": {
-                        "GET": "requested",
-                        "POST": "created",
-                        "PUT": "updated",
-                        "DELETE": "deleted"
+        "routes": {
+            "book_loan_v1": {
+                "methods": ["post"],
+                "pattern": "/api/library/v1/books/:isbn/loans",
+                "sequence": ["requestToTemplateVars", "requestPathToRoutingKey", "requestToMessage", "fireAndForget"],
+                "warez": {
+                    "requestToTemplateVars": {
+                        "type": "requestToTemplateVars"
+                    },
+                    "requestPathToRoutingKey": {
+                        "type": "requestPathToRoutingKey",
+                        "options": {
+                            "method": {
+                                "suffix": true,
+                                "mapping": {
+                                    "POST": "created"
+                                }
+                            }
+                        }
+                    },
+                    "requestToMessage": {
+                        "type": "requestToMessage"
+                    },
+                    "fireAndForget": {
+                        "type": "fireAndForget",
+                        "options": {
+                            "publication": "p1"
+                        }
                     }
                 }
             }
@@ -29,36 +35,31 @@
     },
     "rascal": {
         "vhosts": {
-            "example": {
-                "connection": {
-                    "vhost": "/",
-                    "user": "guest",
-                    "password": "guest"
-                },
+            "/": {
+                "namespace": true,
                 "exchanges": {
-                    "gateway": {
-                    }
+                    "e1": {}
                 },
                 "queues": {
-                     "demo": {
-                        "options": {
-                            "maxLength": 100
-                        }
-                     }
+                    "q1": {}
                 },
                 "bindings": {
-                    "gateway:demo": {
-                        "source": "gateway",
-                        "destination": "demo"
+                    "b1": {
+                        "source": "e1",
+                        "destination": "q1",
+                        "bindingKey": "api.library.v1.#.loans.created"
                     }
                 }
             }
         },
         "publications": {
-            "example:gateway": {
-                "vhost": "example",
-                "exchange": "gateway",
-                "confirm": true
+            "p1": {
+                "exchange": "e1"
+            }
+        },
+        "subscriptions": {
+            "s1": {
+                "queue": "q1"
             }
         }
     }
