@@ -78,7 +78,7 @@ describe('Pillage', function() {
         ], done)
     })
 
-    it('should publish message to th specified publication', function(done) {
+    it('should publish payload to the specified publication', function(done) {
 
         var config = {
             publication: 'p1'

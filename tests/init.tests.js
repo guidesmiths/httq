@@ -67,45 +67,4 @@ describe('Pipeline', function() {
             done()
         })
     })
-
-    it('should initialise warez with shared context', function(done) {
-
-        var config = {
-            sequence: ["a", "b"],
-            warez: {
-                a: {
-                    type: "a"
-                },
-                b: {
-                    type: "b"
-                }
-            }
-        }
-
-        var shared = {
-            z: true
-        }
-
-        httq.init(config, {
-            a: function(options, ctx, next) {
-                next(null, function a(cb) {
-                    ctx.a = true
-                    cb()
-                })
-            },
-            b: function(options, ctx, next) {
-                next(null, function b(cb) {
-                    ctx.b = true
-                    cb()
-                })
-            }
-        }, shared, function(err, warez) {
-            async.parallel(warez, function() {
-                assert.ok(shared.a)
-                assert.ok(shared.b)
-                assert.ok(shared.z)
-                done()
-            })
-        })
-    })
 })

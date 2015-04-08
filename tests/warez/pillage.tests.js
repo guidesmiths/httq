@@ -32,9 +32,9 @@ describe('Pillage', function() {
             request({url: 'http://localhost:3000/a/b/c', headers: { 'foo': '1' }, qs: { bar: 2 }}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.templateVars.method, 'GET')
-                assert.equal(ctx.templateVars.headers['foo'], '1')
-                assert.equal(ctx.templateVars.query['bar'], '2')
+                assert.equal(ctx.templateVars.request.method, 'GET')
+                assert.equal(ctx.templateVars.request.headers['foo'], '1')
+                assert.equal(ctx.templateVars.request.query['bar'], '2')
                 done()
             })
         })
