@@ -53,7 +53,7 @@ describe('requestToRoutingKey', function() {
             request({url: 'http://localhost:3000'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.routingKey, '1.2.3.GET')
+                assert.equal(ctx.message.routingKey, '1.2.3.GET')
                 done()
             })
         })

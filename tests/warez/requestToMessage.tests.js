@@ -5,9 +5,9 @@ var async = require('async')
 var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
-var requestToPayload = require('../..').warez.requestToPayload
+var requestToMessage = require('../..').warez.requestToMessage
 
-describe('requestToPayload', function() {
+describe('requestToMessage', function() {
 
     var server
     var middleware
@@ -26,21 +26,19 @@ describe('requestToPayload', function() {
         server ? server.close(done) : done()
     })
 
-    it('should construct a payload from the request', function(done) {
+    it('should construct a message from the request', function(done) {
 
         var ctx = {}
-        requestToPayload({}, ctx, function(err, _middleware) {
+        requestToMessage({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000?foo=1', headers: { 'bar': 2 }, json: { baz: 3 } }, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.ok(ctx.payload.url)
-                assert.equal(ctx.payload.url.query.foo, 1)
-                assert.ok(ctx.payload.headers)
-                assert.equal(ctx.payload.headers.bar, 2)
-                assert.ok(ctx.payload.body)
-                assert.equal(ctx.payload.body.baz, 3)
+                assert.ok(ctx.message.content.headers)
+                assert.equal(ctx.message.content.headers.bar, 2)
+                assert.ok(ctx.message.content.body)
+                assert.equal(ctx.message.content.body.baz, 3)
                 done()
             })
         })

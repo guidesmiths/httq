@@ -10,10 +10,13 @@ module.exports = {
     warez: warez
 }
 
-function init(config, warez, ctx, next) {
-    if (arguments.length === 3) return init(config, warez, {}, arguments[2])
+function init(broker, config, ctx, next) {
+    if (arguments.length === 3) return init(broker, config, {}, arguments[2])
+    ctx.broker = broker,
+    ctx.warez = _.defaults(ctx.warez || {}, warez)
+
     async.mapSeries(config.sequence, function(id, callback) {
         var warezConfig = config.warez[id]
-        warez[warezConfig.type](warezConfig.options || {}, ctx, callback)
+        ctx.warez[warezConfig.type](warezConfig.options || {}, ctx, callback)
     }, next)
 }

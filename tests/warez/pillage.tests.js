@@ -6,7 +6,7 @@ var express = require('express')
 var request = require('request')
 var pillage = require('../..').warez.pillage
 
-describe('Pillage', function() {
+describe('pillage', function() {
 
     var server
     var middleware

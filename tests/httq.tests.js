@@ -5,13 +5,14 @@ var request = require('request')
 var express = require('express')
 var bodyParser = require('body-parser')
 var async = require('async')
-var config = require('./config.json')
+var config = require('./httq.tests.json')
 var httq = require('..')
 
-describe.skip('httq', function() {
+describe('httq', function() {
 
     var broker
     var server
+    var app
 
     beforeEach(function(done) {
         async.waterfall([
@@ -23,16 +24,12 @@ describe.skip('httq', function() {
                 })
             },
             function(broker, cb) {
-                cb(null, httq(broker, config.httq))
+                httq.init(broker, config.httq.routes.book_loan, cb)
             },
             function(httq, cb) {
-                var app = express();
+                app = express();
                 app.use(bodyParser.json())
-                app.all('/api/library/v1/books', httq('d1'))
-                app.all('/api/library/v2/books', httq('d2'))
-                app.all('/api/library/v3/books', httq('d3'))
-                app.all('/api/library/v4/books', httq('d4'))
-                app.all('/api/library/v5/books', httq('d5'))
+                app.post(config.httq.routes.book_loan.pattern, httq)
                 server = app.listen(3000, cb)
             }
         ], done)
@@ -52,7 +49,7 @@ describe.skip('httq', function() {
     describe('fire and forget', function() {
 
         it('should send a "202 Accepted" response', function(done) {
-            request.get({ url: 'http://localhost:3000/api/library/v1/books', json:true }, function(err, response, body) {
+            request.post({ url: 'http://localhost:3000/api/library/v1/books/978-3-16-148410-0/loans', json:{} }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
                 assert.equal(response.headers['content-type'], 'application/json; charset=utf-8')
@@ -62,16 +59,17 @@ describe.skip('httq', function() {
             })
         })
 
-        it('should publish a message with the correct metadata using path to routing key transformer', function(done) {
-            request.get({ url: 'http://localhost:3000/api/library/v1/books', json:true }, function(err, response, body) {
+        it('should publish a message with the correct metadata', function(done) {
+            request.post({ url: 'http://localhost:3000/api/library/v1/books/978-3-16-148410-0/loans', json:{} }, function(err, response, body) {
                 assert.ifError(err)
+                assert.equal(response.statusCode, 202)
 
                 var consumerTag
                 broker.subscribe('s1', function(err, message, content, next) {
                     assert.ifError(err)
                     broker.unsubscribe('s1', consumerTag)
                     assert.ok(message)
-                    assert.equal(message.fields.routingKey, 'api.library.v1.books')
+                    assert.equal(message.fields.routingKey, 'api.library.v1.books.978-3-16-148410-0.loans.created')
                     assert.equal(message.properties.messageId, body.txid)
                     done()
                 }, function(err, result) {
@@ -81,119 +79,20 @@ describe.skip('httq', function() {
             })
         })
 
-        it('should optionally include HTTP verbs using path to routing key transformer', function(done) {
-            request.get({ url: 'http://localhost:3000/api/library/v2/books', json:true }, function(err, response, body) {
+        it('should publish a message with the correct data', function(done) {
+            request.post({ url: 'http://localhost:3000/api/library/v1/books/978-3-16-148410-0/loans', qs: { foo: 1 }, headers: { bar: 2 }, json: { baz: 3 } }, function(err, response, body) {
                 assert.ifError(err)
-
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
-                    assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(message)
-                    assert.equal(message.fields.routingKey, 'api.library.v2.books.requested')
-                    assert.equal(message.properties.messageId, body.txid)
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
-                })
-            })
-        })
-
-        it('should publish a message with the correct content using path to routing key transformer', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v2/books', json: { foo: 'bar' }, headers: { 'x-tracer': 'baz' } }, function(err, response, body) {
-                assert.ifError(err)
+                assert.equal(response.statusCode, 202)
 
                 var consumerTag
                 broker.subscribe('s1', function(err, message, content, next) {
                     assert.ifError(err)
                     broker.unsubscribe('s1', consumerTag)
                     assert.ok(content)
-                    assert.ok(content.headers)
-                    assert.ok(content.headers['x-tracer'], 'baz')
-                    assert.ok(content.body)
-                    assert.equal(content.body.foo, 'bar')
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
-                })
-            })
-        })
-
-        it('should publish a message with just the body content using path to routing key transformer', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v3/books', json: { foo: 'bar' }, headers: { 'x-tracer': 'baz' } }, function(err, response, body) {
-                assert.ifError(err)
-
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
-                    assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(content)
-                    assert.ok(!content.headers)
-                    assert.ok(!content.body)
-                    assert.equal(content.foo, 'bar')
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
-                })
-            })
-        })
-
-        it('should publish a message with the correct metadata using request to routing key transformer', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v4/books', json:true }, function(err, response, body) {
-                assert.ifError(err)
-
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
-                    assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(message)
-                    assert.equal(message.fields.routingKey, 'library.v4.books.created')
-                    assert.equal(message.properties.messageId, body.txid)
-                    assert.equal(message.properties.contentType, 'application/json')
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
-                })
-            })
-        })
-
-        it('should publish a message with the correct content using request to routing key transformer', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v4/books', json: { foo: 'bar' }, headers: { 'x-tracer': 'baz' } }, function(err, response, body) {
-                assert.ifError(err)
-
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
-                    assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(content)
-                    assert.ok(content.headers)
-                    assert.ok(content.headers['x-tracer'], 'baz')
-                    assert.ok(content.body)
-                    assert.equal(content.body.foo, 'bar')
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
-                })
-            })
-        })
-
-        it('should publish a message with just the body content using request to routing key transformer', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v5/books', json: { foo: 'bar' }, headers: { 'x-tracer': 'baz' } }, function(err, response, body) {
-                assert.ifError(err)
-
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
-                    assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(content)
-                    assert.ok(!content.headers)
-                    assert.ok(!content.body)
-                    assert.equal(content.foo, 'bar')
+                    assert.equal(content.url.pathname, '/api/library/v1/books/978-3-16-148410-0/loans')
+                    assert.equal(content.query.foo, 1)
+                    assert.equal(content.headers.bar, 2)
+                    assert.equal(content.body.baz, 3)
                     done()
                 }, function(err, result) {
                     assert.ifError(err)

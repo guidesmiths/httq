@@ -9,7 +9,7 @@ var request = require('request')
 var rascal = require('rascal')
 var fireAndForget = require('../..').warez.fireAndForget
 
-describe('Pillage', function() {
+describe('fireAndForget', function() {
 
     var broker
     var server
@@ -86,15 +86,21 @@ describe('Pillage', function() {
 
         var ctx = {
             broker: broker,
-            routingKey: 'foo.bar',
-            payload: {
-                foo: 1
+            message: {
+                routingKey: 'foo.bar',
+                headers: {
+                    foo: 1
+                },
+                content: {
+                    bar: 2
+                }
             }
         }
 
         broker.subscribe('s1', function(err, message, content) {
             if (err) return cb(err)
-            assert.equal(content.foo, 1)
+            assert.equal(message.properties.headers.foo, 1)
+            assert.equal(content.bar, 2)
             done()
         })
 

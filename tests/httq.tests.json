@@ -1,0 +1,67 @@
+{
+    "httq": {
+        "routes": {
+            "book_loan": {
+                "methods": ["post"],
+                "pattern": "/api/library/:version/books/:isbn/loans",
+                "sequence": ["pillage", "requestPathToRoutingKey", "requestToMessage", "fireAndForget"],
+                "warez": {
+                    "pillage": {
+                        "type": "pillage"
+                    },
+                    "requestPathToRoutingKey": {
+                        "type": "requestPathToRoutingKey",
+                        "options": {
+                            "pattern": "library.{{request.params.version}.books.{{request.params.isbn}}.loans.{{request.method}}",
+                            "method": {
+                                "suffix": true,
+                                "mapping": {
+                                    "POST": "created"
+                                }
+                            }
+                        }
+                    },
+                    "requestToMessage": {
+                        "type": "requestToMessage"
+                    },
+                    "fireAndForget": {
+                        "type": "fireAndForget",
+                        "options": {
+                            "publication": "p1"
+                        }
+                    }
+
+                }
+            }
+        }
+    },
+    "rascal": {
+        "vhosts": {
+            "/": {
+                "namespace": true,
+                "exchanges": {
+                    "e1": {}
+                },
+                "queues": {
+                    "q1": {}
+                },
+                "bindings": {
+                    "b1": {
+                        "source": "e1",
+                        "destination": "q1"
+                    }
+                }
+            }
+        },
+        "publications": {
+            "p1": {
+                "exchange": "e1"
+            }
+        },
+        "subscriptions": {
+            "s1": {
+                "queue": "q1"
+            }
+        }
+    }
+}
