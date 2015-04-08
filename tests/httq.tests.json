@@ -4,7 +4,7 @@
             "book_loan": {
                 "methods": ["post"],
                 "pattern": "/api/library/:version/books/:isbn/loans",
-                "sequence": ["pillage", "requestPathToRoutingKey", "requestToMessage", "fireAndForget"],
+                "sequence": ["pillage", "requestPathToRoutingKey", "requestToMessageContent", "fireAndForget"],
                 "warez": {
                     "pillage": {
                         "type": "pillage"
@@ -21,8 +21,8 @@
                             }
                         }
                     },
-                    "requestToMessage": {
-                        "type": "requestToMessage"
+                    "requestToMessageContent": {
+                        "type": "requestToMessageContent"
                     },
                     "fireAndForget": {
                         "type": "fireAndForget",

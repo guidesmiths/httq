@@ -5,9 +5,9 @@ var async = require('async')
 var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
-var requestToMessage = require('../..').warez.requestToMessage
+var requestToMessageContent = require('../..').warez.requestToMessageContent
 
-describe('requestToMessage', function() {
+describe('requestToMessageContent', function() {
 
     var server
     var middleware
@@ -29,7 +29,7 @@ describe('requestToMessage', function() {
     it('should construct a message from the request', function(done) {
 
         var ctx = {}
-        requestToMessage({}, ctx, function(err, _middleware) {
+        requestToMessageContent({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000?foo=1', headers: { 'bar': 2 }, json: { baz: 3 } }, function(err, response, content) {
