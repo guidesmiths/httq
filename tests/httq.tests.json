@@ -1,9 +1,9 @@
 {
     "httq": {
         "routes": {
-            "book_loan": {
+            "book_loan_v1": {
                 "methods": ["post"],
-                "pattern": "/api/library/:version/books/:isbn/loans",
+                "pattern": "/api/library/v1/books/:isbn/loans",
                 "sequence": ["pillage", "requestPathToRoutingKey", "requestToMessageContent", "fireAndForget"],
                 "warez": {
                     "pillage": {
@@ -12,7 +12,6 @@
                     "requestPathToRoutingKey": {
                         "type": "requestPathToRoutingKey",
                         "options": {
-                            "pattern": "library.{{request.params.version}.books.{{request.params.isbn}}.loans.{{request.method}}",
                             "method": {
                                 "suffix": true,
                                 "mapping": {
@@ -23,6 +22,31 @@
                     },
                     "requestToMessageContent": {
                         "type": "requestToMessageContent"
+                    },
+                    "fireAndForget": {
+                        "type": "fireAndForget",
+                        "options": {
+                            "publication": "p1"
+                        }
+                    }
+                }
+            },
+            "book_loan_v2": {
+                "methods": ["post"],
+                "pattern": "/api/library/v2/books/:isbn/loans",
+                "sequence": ["pillage", "requestToRoutingKey", "requestToMessage", "fireAndForget"],
+                "warez": {
+                    "pillage": {
+                        "type": "pillage"
+                    },
+                    "requestToRoutingKey": {
+                        "type": "requestToRoutingKey",
+                        "options": {
+                            "template": "library.v2.books.loans.{{request.method}}"
+                        }
+                    },
+                    "requestToMessage": {
+                        "type": "requestToMessage"
                     },
                     "fireAndForget": {
                         "type": "fireAndForget",
