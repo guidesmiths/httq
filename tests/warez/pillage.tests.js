@@ -4,7 +4,7 @@ var _ = require('lodash')
 var async = require('async')
 var express = require('express')
 var request = require('request')
-var pillage = require('..').warez.pillage
+var pillage = require('../..').warez.pillage
 
 describe('Pillage', function() {
 
@@ -21,7 +21,7 @@ describe('Pillage', function() {
     })
 
     after(function(done) {
-        server.close(done)
+        server ? server.close(done) : done()
     })
 
     it('should extract data from the request', function(done) {
@@ -32,9 +32,9 @@ describe('Pillage', function() {
             request({url: 'http://localhost:3000/a/b/c', headers: { 'foo': '1' }, qs: { bar: 2 }}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.method, 'GET')
-                assert.equal(ctx.headers['foo'], '1')
-                assert.equal(ctx.query['bar'], '2')
+                assert.equal(ctx.templateVars.method, 'GET')
+                assert.equal(ctx.templateVars.headers['foo'], '1')
+                assert.equal(ctx.templateVars.query['bar'], '2')
                 done()
             })
         })
