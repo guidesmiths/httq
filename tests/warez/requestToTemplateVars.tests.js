@@ -4,9 +4,9 @@ var _ = require('lodash')
 var async = require('async')
 var express = require('express')
 var request = require('request')
-var pillage = require('../..').warez.pillage
+var requestToTemplateVars = require('../..').warez.requestToTemplateVars
 
-describe('pillage', function() {
+describe('requestToTemplateVars', function() {
 
     var server
     var middleware
@@ -26,7 +26,7 @@ describe('pillage', function() {
 
     it('should extract data from the request', function(done) {
         var ctx = {}
-        pillage({}, ctx, function(err, _middleware) {
+        requestToTemplateVars({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/a/b/c', headers: { 'foo': '1' }, qs: { bar: 2 }}, function(err, response, content) {

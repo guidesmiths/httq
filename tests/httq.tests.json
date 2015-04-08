@@ -4,10 +4,10 @@
             "book_loan_v1": {
                 "methods": ["post"],
                 "pattern": "/api/library/v1/books/:isbn/loans",
-                "sequence": ["pillage", "requestPathToRoutingKey", "requestToMessageContent", "fireAndForget"],
+                "sequence": ["requestToTemplateVars", "requestPathToRoutingKey", "requestToMessageContent", "fireAndForget"],
                 "warez": {
-                    "pillage": {
-                        "type": "pillage"
+                    "requestToTemplateVars": {
+                        "type": "requestToTemplateVars"
                     },
                     "requestPathToRoutingKey": {
                         "type": "requestPathToRoutingKey",
@@ -34,10 +34,10 @@
             "book_loan_v2": {
                 "methods": ["post"],
                 "pattern": "/api/library/v2/books/:isbn/loans",
-                "sequence": ["pillage", "requestToRoutingKey", "requestToMessage", "fireAndForget"],
+                "sequence": ["requestToTemplateVars", "requestToRoutingKey", "requestToMessage", "fireAndForget"],
                 "warez": {
-                    "pillage": {
-                        "type": "pillage"
+                    "requestToTemplateVars": {
+                        "type": "requestToTemplateVars"
                     },
                     "requestToRoutingKey": {
                         "type": "requestToRoutingKey",
