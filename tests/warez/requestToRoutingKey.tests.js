@@ -58,4 +58,44 @@ describe('requestToRoutingKey', function() {
             })
         })
     })
+
+    it('should map the method', function(done) {
+
+        var config = {
+            template: '{{request.headers.foo}}.{{request.params.bar}}.{{request.query.baz}}.{{request.method}}',
+            method: {
+                mapping: {
+                    'GET': 'requested'
+                }
+            }
+        }
+
+        var ctx = {
+            templateVars: {
+                request: {
+                    method: 'GET',
+                    headers: {
+                        foo: 1
+                    },
+                    params: {
+                        bar: 2
+                    },
+                    query: {
+                        baz: 3
+                    }
+                }
+            }
+        }
+
+        requestToRoutingKey(config, ctx, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({url: 'http://localhost:3000'}, function(err, response, content) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 204)
+                assert.equal(ctx.message.routingKey, '1.2.3.requested')
+                done()
+            })
+        })
+    })
 })
