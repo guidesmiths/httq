@@ -19,7 +19,7 @@ rascal.createBroker(rascalConfig, function(err, broker) {
         app.listen(3000)
     })
 
-    console.log('Try: $ curl -H "Content-Type: application/json" -X POST http://localhost:3000/api/library/v1/books/978-0132350884/loans')
+    console.log('Try: $ curl -H "Content-Type: application/json" -X POST http://localhost:3000/api/library/v1/books/978-0132350884/loans -d \'{"member": "6545345"}\'')
 
     function bail(err) {
         console.error(err.message)

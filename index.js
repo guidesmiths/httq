@@ -4,6 +4,7 @@ var _ = require('lodash')
 var async = require('async')
 var url = require('url')
 var warez = require('./lib/warez')
+var configure = require('./lib/config/configure')
 
 module.exports = {
     init: init,
@@ -15,8 +16,11 @@ function init(broker, config, ctx, next) {
     ctx.broker = broker,
     ctx.warez = _.defaults(ctx.warez || {}, warez)
 
-    async.mapSeries(config.sequence, function(id, callback) {
-        var warezConfig = config.warez[id]
-        ctx.warez[warezConfig.type](warezConfig.options || {}, ctx, callback)
-    }, next)
+    configure(config, function(err, routeConfig) {
+        if (err) return next(err)
+        async.mapSeries(routeConfig.sequence, function(id, callback) {
+            var warezConfig = routeConfig.warez[id]
+            ctx.warez[warezConfig.type](warezConfig.options || {}, ctx, callback)
+        }, next)
+    })
 }

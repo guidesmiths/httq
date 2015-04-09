@@ -6,11 +6,7 @@
                 "pattern": "/api/library/v1/books/:isbn/loans",
                 "sequence": ["requestToTemplateVars", "requestPathToRoutingKey", "requestToMessageContent", "fireAndForget"],
                 "warez": {
-                    "requestToTemplateVars": {
-                        "type": "requestToTemplateVars"
-                    },
                     "requestPathToRoutingKey": {
-                        "type": "requestPathToRoutingKey",
                         "options": {
                             "method": {
                                 "suffix": true,
@@ -20,11 +16,7 @@
                             }
                         }
                     },
-                    "requestToMessageContent": {
-                        "type": "requestToMessageContent"
-                    },
                     "fireAndForget": {
-                        "type": "fireAndForget",
                         "options": {
                             "publication": "p1"
                         }
@@ -36,17 +28,11 @@
                 "pattern": "/api/library/v2/books/:isbn/loans",
                 "sequence": ["requestToTemplateVars", "requestToRoutingKey", "requestToMessage", "fireAndForget"],
                 "warez": {
-                    "requestToTemplateVars": {
-                        "type": "requestToTemplateVars"
-                    },
                     "requestToRoutingKey": {
                         "type": "requestToRoutingKey",
                         "options": {
                             "template": "library.v2.books.loans.{{request.method}}"
                         }
-                    },
-                    "requestToMessage": {
-                        "type": "requestToMessage"
                     },
                     "fireAndForget": {
                         "type": "fireAndForget",
