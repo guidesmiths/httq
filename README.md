@@ -181,6 +181,7 @@ module.exports = function(config, ctx, next) {
     next(null, function(req, res, next) {
         // ...
     })
+}    
 ```
 
 ### Provided Middleware
@@ -221,6 +222,7 @@ Generates a routing key from the request by passing the templateVars through a h
 }
 ```
 You can map the request method to something more meaningful
+```js
 {
     "requestToRoutingKey": {
         "type": "requestToRoutingKey",
@@ -237,9 +239,8 @@ You can map the request method to something more meaningful
 ```
 
 #### requestPathToRoutingKey
-Generates a routing key from the request by replacing slashes with full stops. The routing key is stored in ctx.message.routingKey. No parameters are required but you may optionall include the request method
+Generates a routing key from the request by replacing slashes with full stops. The routing key is stored in ctx.message.routingKey. No parameters are required but you may optionall include the request method.
 ```json
-You can map the request method to something more meaningful
 {
     "requestPathToRoutingKey": {
         "type": "requestPathToRoutingKey",
@@ -271,14 +272,14 @@ Publishes the AMQP message to a Rascal publication using the routing key defined
 You can override the httq middleware or add your own by initialising the ctx "warez" attribute, e.g.
 
 ```js
-    var customFireAndForget = require('/my/lib/customFireAndForget')
-    var extraMiddleware = require('/my/lib/extraMiddleware')
+var customFireAndForget = require('/my/lib/customFireAndForget')
+var extraMiddleware = require('/my/lib/extraMiddleware')
 
-    httq.init(broker, config.httq.book_loan_v1, {
-        fireAndForget: customFireAndForget,
-        extraMiddleware: extraMiddleware
-    }, function(err, httqs) {
-        //...
-    })
+httq.init(broker, config.httq.book_loan_v1, {
+    fireAndForget: customFireAndForget,
+    extraMiddleware: extraMiddleware
+}, function(err, httqs) {
+    //...
+})
 ```
 
