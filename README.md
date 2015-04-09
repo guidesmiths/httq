@@ -2,7 +2,9 @@
 Middleware for bridging HTTP and AMQP
 
 ## Installation
+```js
 npm install httq
+```
 
 ## Prequisits
 * RabbitMQ
