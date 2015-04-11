@@ -150,7 +150,7 @@ It should look something like this:
 }
 ```
 
-## Middelware
+## Middleware
 httq middleware needs to be initialised for each route in your express application, by passing httq.init with a broker, configuration, ctx (optional), and callback. The init method will build a chain of middleware in the order defined by the sequence attribute. If you need to pass paramters to a specific middleware then specifiy it in the warez block.
 
 ```json
