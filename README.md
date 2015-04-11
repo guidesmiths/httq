@@ -183,7 +183,7 @@ module.exports = function(config, ctx, next) {
     next(null, function(req, res, next) {
         // ...
     })
-}    
+}
 ```
 
 ### Provided Middleware
@@ -274,14 +274,33 @@ Publishes the AMQP message to a Rascal publication using the routing key defined
 You can override the httq middleware or add your own by initialising the ctx "warez" attribute, e.g.
 
 ```js
-var customFireAndForget = require('/my/lib/customFireAndForget')
-var extraMiddleware = require('/my/lib/extraMiddleware')
+var customFireAndForget = require('./lib/customFireAndForget')
+var extraMiddleware = require('./lib/extraMiddleware')
 
 httq.init(broker, config.httq.book_loan_v1, {
-    fireAndForget: customFireAndForget,
-    extraMiddleware: extraMiddleware
+    warez: {
+        fireAndForget: customFireAndForget,
+        extraMiddleware: extraMiddleware
+    }
 }, function(err, httqs) {
     //...
 })
 ```
+
+## Handling Errors
+In most cases you should simply return next(err) and let your express default error handler deal with it. Where an httq provided middleware depends on a library that emits errors (e.g. Rascal) it will log details of the error to the console. If you would prefer a different behaviour, specify an alternative error handler when initialising httq.
+
+```js
+httq.init(broker, config.httq.book_loan_v1, {
+    errorHandler: errorHandler
+}, function(err, httqs) {
+    //...
+})
+
+function errorHandler(err, details) {
+    //...
+}
+```
+
+
 
