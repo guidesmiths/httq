@@ -295,20 +295,6 @@ Validates the message against a JSON schema using [tv4](https://github.com/gerai
     }
 }
 ```
-#### fileSourcedJsonValidator
-Validates the message against a JSON schema using [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema (and any referenced schemas) are read when the middleware is initialised (typically during application start), and will error if the schemas cannot be read.
-```json
-{
-    "fileSourcedJsonValidator": {
-        "options": {
-            "schema": {
-                "url": /var/data/schemas/schema.json
-                "absolute": true
-            }
-        }
-    }
-}
-```
 If validation is succeeds the message will be decorated with a header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
 ```json
 [
