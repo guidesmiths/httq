@@ -17,6 +17,12 @@ describe('httq', function() {
     beforeEach(function(done) {
         async.waterfall([
             function(cb) {
+                app = express();
+                app.use(bodyParser.json())
+                app.use('/schemas', express.static('tests/schemas'))
+                server = app.listen(3000, cb)
+            },
+            function(cb) {
                 rascal.createBroker(rascal.withTestConfig(config.rascal), function(err, _broker) {
                     if (err) return cb(err)
                     broker = _broker
@@ -26,15 +32,15 @@ describe('httq', function() {
             function(broker, cb) {
                 async.series({
                     route1: httq.init.bind(null, broker, config.httq.routes.book_loan_v1),
-                    route2: httq.init.bind(null, broker, config.httq.routes.book_loan_v2)
+                    route2: httq.init.bind(null, broker, config.httq.routes.book_loan_v2),
+                    route3: httq.init.bind(null, broker, config.httq.routes.book_loan_v3)
                 }, cb)
             },
             function(httq, cb) {
-                app = express();
-                app.use(bodyParser.json())
                 app.post(config.httq.routes.book_loan_v1.pattern, httq.route1)
                 app.post(config.httq.routes.book_loan_v2.pattern, httq.route2)
-                server = app.listen(3000, cb)
+                app.post(config.httq.routes.book_loan_v3.pattern, httq.route3)
+                cb()
             }
         ], done)
     })
@@ -53,7 +59,7 @@ describe('httq', function() {
     describe('fire and forget', function() {
 
         it('should send a "202 Accepted" response', function(done) {
-            request.post({ url: 'http://localhost:3000/api/library/v1/books/978-3-16-148410-0/loans', json:{} }, function(err, response, body) {
+            request.post({ url: 'http://localhost:3000/api/library/v1/books/978-3-16-148410-0/loans', json: {} }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
                 assert.equal(response.headers['content-type'], 'application/json; charset=utf-8')
@@ -106,7 +112,7 @@ describe('httq', function() {
         })
 
         it('should publish a message with the correct metadata using the requestToRoutingKey transformer', function(done) {
-            request.post({ url: 'http://guest:secret@localhost:3000/api/library/v2/books/978-3-16-148410-0/loans', json: true, qs: { foo: 1 }, headers: { bar: 2 } }, function(err, response, body) {
+            request.post({ url: 'http://guest:secret@localhost:3000/api/library/v2/books/978-3-16-148410-0/loans', json: {}, qs: { foo: 1 }, headers: { bar: 2 } }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
 
@@ -144,6 +150,23 @@ describe('httq', function() {
                     assert.ifError(err)
                     consumerTag = result.consumerTag
                 })
+            })
+        })
+
+
+        it('should valid messages', function(done) {
+            request.post({ url: 'http://localhost:3000/api/library/v3/books/978-3-16-148410-0/loans', json: { id: 1, type: 'book' } }, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 202)
+                done()
+            })
+        })
+
+        it('should return a 400 when message is invalid', function(done) {
+            request.post({ url: 'http://localhost:3000/api/library/v3/books/978-3-16-148410-0/loans', json: { foo: 1 } }, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 400)
+                done()
             })
         })
     })

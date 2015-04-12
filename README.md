@@ -175,7 +175,28 @@ httq middleware needs to be initialised for each route in your express applicati
     }
 }
 ```
-Each middleware in the chain should export a single function that expects the config, context and callback. It should return the a function with typical express middleware signature.
+Each middleware in the chain should export a single function that expects the config, context and callback. It should return the a function with typical express middleware signature. If you want a middleware to appear twice just relist it in the sequence. If you want the two instances to have different parameters, give it a unique name and specify the 'type' parameter.
+
+```json
+{
+    "sequence": ["logStart", "logEnd"],
+    "warez": {
+        "logStart": {
+            "type": "logger",
+            "options": {
+                "message": "start"
+            }
+        },
+        "logEnd": {
+            "type": "logger",
+            "options": {
+                "message": "end"
+            }
+        }
+    }
+}
+```
+
 
 ```js
 module.exports = function(config, ctx, next) {
@@ -216,7 +237,6 @@ Generates a routing key from the request by passing the templateVars through a h
 ```json
 {
     "requestToRoutingKey": {
-        "type": "requestToRoutingKey",
         "options": {
             "template": "library.v2.books.loans.{{request.method}}"
         }
@@ -227,7 +247,6 @@ You can map the request method to something more meaningful
 ```js
 {
     "requestToRoutingKey": {
-        "type": "requestToRoutingKey",
         "options": {
             "template": "library.v2.books.loans.{{request.method}}"
             "method": {
@@ -245,7 +264,6 @@ Generates a routing key from the request by replacing slashes with full stops. T
 ```json
 {
     "requestPathToRoutingKey": {
-        "type": "requestPathToRoutingKey",
         "options": {
             "method": {
                 "prefix": true,
@@ -263,6 +281,61 @@ Generates AMQP message headers and content from the request. This is stored in c
 
 #### requestToMessageContent
 Generates AMQP message content from the request. A json document reprsenting the full request (url, params, headers, query parameters and body) is stored in ctx.message.content
+
+#### httpSourcedJsonValidator
+Validates the message against a JSON schema using [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema (and any referenced schemas) are downloaded when the middleware is initialised (typically during application start), and will error if the schemas cannot be downloaded. It is therefore suggested you keep them somewhere with high availability such as s3.
+```json
+{
+    "httpSourcedJsonValidator": {
+        "options": {
+            "schema": {
+                "url": http://example.com/schema.json
+            }
+        }
+    }
+}
+```
+#### fileSourcedJsonValidator
+Validates the message against a JSON schema using [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema (and any referenced schemas) are read when the middleware is initialised (typically during application start), and will error if the schemas cannot be read.
+```json
+{
+    "fileSourcedJsonValidator": {
+        "options": {
+            "schema": {
+                "url": /var/data/schemas/schema.json
+                "absolute": true
+            }
+        }
+    }
+}
+```
+If validation is succeeds the message will be decorated with a header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
+```json
+[
+    {
+        "message": "Missing required property: id",
+        "params": {
+            "key": "id"
+        },
+        "code": 302,
+        "dataPath": "",
+        "schemaPath": "/required/0",
+        "subErrors": null,
+        "name": "ValidationError"
+    },
+    {
+        "message": "Missing required property: type",
+        "params": {
+            "key": "type"
+        },
+        "code": 302,
+        "dataPath": "",
+        "schemaPath": "/required/1",
+        "subErrors": null,
+        "name": "ValidationError"
+    }
+]
+```
 
 #### fireAndForget
 Publishes the AMQP message to a Rascal publication using the routing key defined in the context. If successful the middleware will return 202 "Accepted" and a transaction id corresponding to the message id

@@ -5,9 +5,9 @@ var async = require('async')
 var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
-var validateMessage = require('../..').warez.validateMessage
+var httpSourcedJsonValidator = require('../..').warez.httpSourcedJsonValidator
 
-describe('validateMessage', function() {
+describe('httpSourcedJsonValidator', function() {
 
     var server
     var middleware
@@ -60,7 +60,7 @@ describe('validateMessage', function() {
     })
 
     it('should fail to initialise when the primary schema is not specified', function(done) {
-        validateMessage({}, {}, function(err, _middleware) {
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ok(err)
             assert.equal('A schema url is required', err.message)
             done()
@@ -68,19 +68,19 @@ describe('validateMessage', function() {
     })
 
     it('should fail to initialise when the primary schema cannot be downloaded', function(done) {
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/missing'
             }
         }, {}, function(err, _middleware) {
             assert.ok(err)
-            assert.equal('Failed to download schema from: http://localhost:3000/schemas/missing', err.message)
+            assert.equal('Schema download from: http://localhost:3000/schemas/missing failed with status: 404', err.message)
             done()
         })
     })
 
     it('should fail to initialise when the primary schema url is invalid', function(done) {
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'invalid'
             }
@@ -92,13 +92,13 @@ describe('validateMessage', function() {
     })
 
     it('should fail to initialise when a referenced schema cannot be downloaded', function(done) {
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/complex-missing-ref'
             }
         }, {}, function(err) {
             assert.ok(err)
-            assert.equal('Failed to download schema from: http://localhost:3000/schemas/missing', err.message)
+            assert.equal('Schema download from: http://localhost:3000/schemas/missing failed with status: 404', err.message)
             done()
         })
     })
@@ -107,11 +107,16 @@ describe('validateMessage', function() {
 
         var ctx = {
             message: {
-                content: { id: 1, type: 'book' }
+                content: {
+                    body: {
+                        id: 1,
+                        type: 'book'
+                    }
+                }
             }
         }
 
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/simple'
             }
@@ -130,14 +135,22 @@ describe('validateMessage', function() {
 
         var ctx = {
             message: {
-                content: [
-                    { id: 1, type: 'book' },
-                    { id: 2, type: 'journal' }
-                ]
+                content: {
+                    body: [
+                        {
+                            id: 1,
+                            type: 'book'
+                        },
+                        {
+                            id: 2,
+                            type: 'journal'
+                        }
+                    ]
+                }
             }
         }
 
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/complex'
             }
@@ -156,11 +169,15 @@ describe('validateMessage', function() {
 
         var ctx = {
             message: {
-                content: { invalid: 1 }
+                content: {
+                    body: {
+                        invalid: 1
+                    }
+                }
             }
         }
 
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/simple'
             }
@@ -178,14 +195,20 @@ describe('validateMessage', function() {
         })
     })
 
-    it('should set primary schema url in httq header', function(done) {
+    it('should set primary schema url in header', function(done) {
+
         var ctx = {
             message: {
-                content: { id: 1, type: 'book' }
+                content: {
+                    body: {
+                        id: 1,
+                        type: 'book'
+                    }
+                }
             }
         }
 
-        validateMessage({
+        httpSourcedJsonValidator({
             schema: {
                 url: 'http://localhost:3000/schemas/simple'
             }
