@@ -289,7 +289,7 @@ Validates the message against a JSON schema using [tv4](https://github.com/gerai
     "httpSourcedJsonValidator": {
         "options": {
             "schema": {
-                "url": http://example.com/schema.json
+                "url": "http://example.com/schema.json"
             }
         }
     }
