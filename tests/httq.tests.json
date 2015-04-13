@@ -46,7 +46,7 @@
             "book_loan_v3": {
                 "methods": ["post"],
                 "pattern": "/api/library/v3/books/:isbn/loans",
-                "sequence": ["requestToTemplateVars", "requestPathToRoutingKey", "requestToMessageContent", "httpSourcedJsonValidator", "fireAndForget"],
+                "sequence": ["requestToTemplateVars", "requestPathToRoutingKey", "requestToMessageContent", "requestToSchemaUrl", "httpSourcedJsonValidator", "fireAndForget"],
                 "warez": {
                     "requestPathToRoutingKey": {
                         "options": {
@@ -58,11 +58,9 @@
                             }
                         }
                     },
-                    "httpSourcedJsonValidator": {
+                    "requestToSchemaUrl": {
                         "options": {
-                            "schema": {
-                                "url": "http://localhost:3000/schemas/book_loan_v3.json"
-                            }
+                            "template": "http://localhost:3000/schemas/book_loan_v3.json"
                         }
                     },
                     "fireAndForget": {

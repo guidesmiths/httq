@@ -17,7 +17,7 @@ describe('httpSourcedJsonValidator', function() {
         app.use(bodyParser.json())
         app.post('/', function(req, res, next) {
             middleware(req, res, function(err) {
-                err ? res.status(500).end() : res.status(204).end()
+                err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
         })
         app.get('/schemas/simple', function(req, res) {
@@ -59,47 +59,67 @@ describe('httpSourcedJsonValidator', function() {
         server ? server.close(done) : done()
     })
 
-    it('should fail to initialise when the primary schema is not specified', function(done) {
+    it('should respond with 500 when the primary schema is not specified', function(done) {
         httpSourcedJsonValidator({}, {}, function(err, _middleware) {
-            assert.ok(err)
-            assert.equal('A schema url is required', err.message)
-            done()
+            assert.ifError(err)
+            middleware = _middleware
+            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 500)
+                assert.equal(body.error, 'No schema defined for /')
+                done()
+            })
         })
     })
 
     it('should fail to initialise when the primary schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/missing'
+        httpSourcedJsonValidator({}, {
+            message: {
+                schema: 'http://localhost:3000/schemas/missing'
             }
-        }, {}, function(err, _middleware) {
-            assert.ok(err)
-            assert.equal('Schema download from: http://localhost:3000/schemas/missing failed with status: 404', err.message)
-            done()
+        }, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 500)
+                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                done()
+            })
         })
     })
 
     it('should fail to initialise when the primary schema url is invalid', function(done) {
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'invalid'
+        httpSourcedJsonValidator({}, {
+            message: {
+                schema: 'invalid'
             }
-        }, {}, function(err, _middleware) {
-            assert.ok(err)
-            assert.equal('Invalid URI \"invalid\"', err.message)
-            done()
+        }, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 500)
+                assert.equal(body.error, 'Error requesting schema from: invalid. Original error was: Invalid URI "invalid"')
+                done()
+            })
         })
     })
 
     it('should fail to initialise when a referenced schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/complex-missing-ref'
+        httpSourcedJsonValidator({}, {
+            message: {
+                schema: 'http://localhost:3000/schemas/complex-missing-ref'
             }
-        }, {}, function(err) {
-            assert.ok(err)
-            assert.equal('Schema download from: http://localhost:3000/schemas/missing failed with status: 404', err.message)
-            done()
+        }, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 500)
+                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                done()
+            })
         })
     })
 
@@ -107,6 +127,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
+                schema: 'http://localhost:3000/schemas/simple',
                 content: {
                     body: {
                         id: 1,
@@ -116,11 +137,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/simple'
-            }
-        }, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
@@ -135,6 +152,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
+                schema: 'http://localhost:3000/schemas/complex',
                 content: {
                     body: [
                         {
@@ -150,11 +168,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/complex'
-            }
-        }, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
@@ -169,56 +183,24 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
+                schema: 'http://localhost:3000/schemas/simple',
                 content: {
                     body: {
-                        invalid: 1
-                    }
-                }
-            }
-        }
-
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/simple'
-            }
-        }, ctx, function(err, _middleware) {
-            assert.ifError(err)
-            middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
-                assert.ifError(err)
-                assert.equal(response.statusCode, 400)
-                assert.equal(body.length, 2)
-                assert.equal(body[0].message, 'Missing required property: id')
-                assert.equal(body[1].message, 'Missing required property: type')
-                done()
-            })
-        })
-    })
-
-    it('should set primary schema url in header', function(done) {
-
-        var ctx = {
-            message: {
-                content: {
-                    body: {
-                        id: 1,
+                        id: 'a',
                         type: 'book'
                     }
                 }
             }
         }
 
-        httpSourcedJsonValidator({
-            schema: {
-                url: 'http://localhost:3000/schemas/simple'
-            }
-        }, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
                 assert.ifError(err)
-                assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.headers.httq.schema.url, 'http://localhost:3000/schemas/simple')
+                assert.equal(response.statusCode, 400)
+                assert.equal(body.length, 1)
+                assert.equal(body[0].message, 'Invalid type: string (expected number)')
                 done()
             })
         })

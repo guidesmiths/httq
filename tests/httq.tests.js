@@ -154,7 +154,7 @@ describe('httq', function() {
         })
 
 
-        it('should valid messages', function(done) {
+        it('should validate messages', function(done) {
             request.post({ url: 'http://localhost:3000/api/library/v3/books/978-3-16-148410-0/loans', json: { id: 1, type: 'book' } }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
