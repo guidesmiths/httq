@@ -320,9 +320,9 @@ Validates the message against a JSON schema from S3. The validator uses [tv4](ht
 The s3SourcedJsonValidator requires the following configuration
 ```json
 {
-    s3: {
-        bucket: 's3-bucket-name',
-        region: 'aws-region'
+    "s3": {
+        "bucket": "s3-bucket-name",
+        "region": "aws-region"
     }
 }
 ```
