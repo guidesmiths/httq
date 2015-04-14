@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type":"object",
+    "properties":{
+        "id": {
+            "type": "number"
+        },
+        "type": {
+            "$ref": "#/definitions/type"
+        }
+    },
+    "required" : ["id", "type"],
+    "definitions": {
+       "type": "number"
+    }
+}

@@ -2,12 +2,12 @@ var format = require('util').format
 var assert = require('assert')
 var _ = require('lodash')
 var async = require('async')
-var express = require('express')
 var request = require('request')
+var express = require('express')
 var bodyParser = require('body-parser')
-var httpSourcedJsonValidator = require('../..').warez.httpSourcedJsonValidator
+var filesystemSourcedJsonValidator = require('../..').warez.filesystemSourcedJsonValidator
 
-describe('httpSourcedJsonValidator', function() {
+describe('filesystemSourcedJsonValidator', function() {
 
     var server
     var middleware
@@ -20,7 +20,6 @@ describe('httpSourcedJsonValidator', function() {
                 err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
         })
-        app.use('/schemas', express.static('tests/schemas'))
         server = app.listen(3000, done)
     })
 
@@ -29,7 +28,7 @@ describe('httpSourcedJsonValidator', function() {
     })
 
     it('should respond with 500 when the primary schema is not specified', function(done) {
-        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -41,10 +40,10 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should response with 500 when the primary schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
+    it('should respond with 500 when the primary schema cannot be read', function(done) {
+        filesystemSourcedJsonValidator({}, {
             message: {
-                schema: 'http://localhost:3000/schemas/missing'
+                schema: './tests/schemas/missing'
             }
         }, function(err, _middleware) {
             assert.ifError(err)
@@ -52,16 +51,16 @@ describe('httpSourcedJsonValidator', function() {
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                assert.equal(body.error, 'Error reading schema from: ./tests/schemas/missing. Original error was: ENOENT, open \'./tests/schemas/missing\'')
                 done()
             })
         })
     })
 
-    it('should response with 500 when the primary schema url is invalid', function(done) {
-        httpSourcedJsonValidator({}, {
+    it('should respond with 500 when a referenced schema cannot be read', function(done) {
+        filesystemSourcedJsonValidator({}, {
             message: {
-                schema: 'invalid'
+                schema: './tests/schemas/complex-missing-ref.json'
             }
         }, function(err, _middleware) {
             assert.ifError(err)
@@ -69,24 +68,7 @@ describe('httpSourcedJsonValidator', function() {
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Error requesting schema from: invalid. Original error was: Invalid URI "invalid"')
-                done()
-            })
-        })
-    })
-
-    it('should response with 500 when a referenced schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
-            message: {
-                schema: 'http://localhost:3000/schemas/complex-missing-ref.json'
-            }
-        }, function(err, _middleware) {
-            assert.ifError(err)
-            middleware = _middleware
-            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
-                assert.ifError(err)
-                assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                assert.equal(body.error, 'Error reading schema from: tests/schemas/missing. Original error was: ENOENT, open \'tests/schemas/missing\'')
                 done()
             })
         })
@@ -96,7 +78,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/simple.json',
+                schema: './tests/schemas/simple.json',
                 content: {
                     body: {
                         id: 1,
@@ -106,10 +88,10 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -121,7 +103,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/complex.json',
+                schema: './tests/schemas/complex.json',
                 content: {
                     body: [
                         {
@@ -137,10 +119,10 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -152,7 +134,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/simple.json',
+                schema: './tests/schemas/simple.json',
                 content: {
                     body: {
                         id: 'a',
@@ -162,7 +144,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {

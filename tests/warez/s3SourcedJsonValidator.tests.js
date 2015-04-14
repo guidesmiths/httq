@@ -5,12 +5,21 @@ var async = require('async')
 var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
-var httpSourcedJsonValidator = require('../..').warez.httpSourcedJsonValidator
+var s3SourcedJsonValidator = require('../..').warez.s3SourcedJsonValidator
 
-describe('httpSourcedJsonValidator', function() {
+describe('s3SourcedJsonValidator', function() {
+
+    this.timeout(60000)
+    this.slow(10000)
 
     var server
     var middleware
+    var config = {
+        s3: {
+            bucket: 'httq-tests',
+            region: 'eu-west-1'
+        }
+    }
 
     before(function(done) {
         var app = express()
@@ -20,7 +29,6 @@ describe('httpSourcedJsonValidator', function() {
                 err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
         })
-        app.use('/schemas', express.static('tests/schemas'))
         server = app.listen(3000, done)
     })
 
@@ -28,8 +36,39 @@ describe('httpSourcedJsonValidator', function() {
         server ? server.close(done) : done()
     })
 
+    it('should fail to initialise when s3 config is not specified', function(done) {
+        s3SourcedJsonValidator({}, {}, function(err, _middleware) {
+            assert.ok(err)
+            assert.equal(err.message, 'An S3 region is required')
+            done()
+        })
+    })
+
+    it('should fail to initialise when s3 region is not specified', function(done) {
+        s3SourcedJsonValidator({
+            s3: {
+            }
+        }, {}, function(err, _middleware) {
+            assert.ok(err)
+            assert.equal(err.message, 'An S3 region is required')
+            done()
+        })
+    })
+
+    it('should fail to initialise when s3 bucket is not specified', function(done) {
+        s3SourcedJsonValidator({
+            s3: {
+                region: 'eu-west-1'
+            }
+        }, {}, function(err, _middleware) {
+            assert.ok(err)
+            assert.equal(err.message, 'An S3 bucket is required')
+            done()
+        })
+    })
+
     it('should respond with 500 when the primary schema is not specified', function(done) {
-        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -41,10 +80,10 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should response with 500 when the primary schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
+    it('should respond with 500 when the primary schema cannot be downloaded', function(done) {
+        s3SourcedJsonValidator(config, {
             message: {
-                schema: 'http://localhost:3000/schemas/missing'
+                schema: '/schemas/missing'
             }
         }, function(err, _middleware) {
             assert.ifError(err)
@@ -52,16 +91,16 @@ describe('httpSourcedJsonValidator', function() {
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                assert.equal(body.error, 'Error requesting schema: /schemas/missing. Original error was: The specified key does not exist.')
                 done()
             })
         })
     })
 
-    it('should response with 500 when the primary schema url is invalid', function(done) {
-        httpSourcedJsonValidator({}, {
+    it('should respond with 500 when a referenced schema cannot be downloaded', function(done) {
+        s3SourcedJsonValidator(config, {
             message: {
-                schema: 'invalid'
+                schema: '/schemas/complex-missing-ref.json'
             }
         }, function(err, _middleware) {
             assert.ifError(err)
@@ -69,24 +108,7 @@ describe('httpSourcedJsonValidator', function() {
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Error requesting schema from: invalid. Original error was: Invalid URI "invalid"')
-                done()
-            })
-        })
-    })
-
-    it('should response with 500 when a referenced schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
-            message: {
-                schema: 'http://localhost:3000/schemas/complex-missing-ref.json'
-            }
-        }, function(err, _middleware) {
-            assert.ifError(err)
-            middleware = _middleware
-            request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
-                assert.ifError(err)
-                assert.equal(response.statusCode, 500)
-                assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                assert.equal(body.error, 'Error requesting schema: /schemas/missing. Original error was: The specified key does not exist.')
                 done()
             })
         })
@@ -96,7 +118,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/simple.json',
+                schema: '/schemas/simple.json',
                 content: {
                     body: {
                         id: 1,
@@ -106,10 +128,10 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -121,7 +143,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/complex.json',
+                schema: '/schemas/complex.json',
                 content: {
                     body: [
                         {
@@ -137,10 +159,10 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -152,7 +174,7 @@ describe('httpSourcedJsonValidator', function() {
 
         var ctx = {
             message: {
-                schema: 'http://localhost:3000/schemas/simple.json',
+                schema: '/schemas/simple.json',
                 content: {
                     body: {
                         id: 'a',
@@ -162,7 +184,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -172,6 +194,46 @@ describe('httpSourcedJsonValidator', function() {
                 assert.equal(body[0].message, 'Invalid type: string (expected number)')
                 done()
             })
+        })
+    })
+
+    it('should cache schemas', function(done) {
+
+        var ctx = {
+            message: {
+                schema: '/schemas/simple.json',
+                content: {
+                    body: {
+                        id: 1,
+                        type: 'book'
+                    }
+                }
+            }
+        }
+
+        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            var first = {}
+            var second = {}
+
+            var post = _.curry(function(timing, cb) {
+                timing.start = new Date().getTime()
+                request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
+                    timing.duration = new Date().getTime() - timing.start
+                    cb(err)
+                })
+            })
+
+            async.series([
+                post(first),
+                post(second)
+            ], function(err) {
+                assert.ifError(err)
+                assert.ok(first.duration > second.duration)
+                done()
+            })
+
         })
     })
 })
