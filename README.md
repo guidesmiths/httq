@@ -286,7 +286,7 @@ Generates AMQP message content from the request. A json document reprsenting the
 Generates a schema url from the request by passing the templateVars through a hogan template. The routing key is stored in ctx.message.schema
 
 #### httpSourcedJsonValidator
-Validates the message against a JSON schema using [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be downloaded (along with any referenced schemas) in this middleware, if it has not previously been encountered. It is therefore suggested you keep them somewhere with high availability such as s3. If a schema download fails the middleware responds with 500. If validation is succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
+Validates the message against a JSON schema downloaded using http. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
 ```json
 [
     {
@@ -313,6 +313,22 @@ Validates the message against a JSON schema using [tv4](https://github.com/gerai
     }
 ]
 ```
+
+####s3SourcedJsonValidator
+Validates the message against a JSON schema from S3. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
+
+The s3SourcedJsonValidator requires the following configuration
+```json
+{
+    s3: {
+        bucket: 's3-bucket-name',
+        region: 'aws-region'
+    }
+}
+```
+
+#### filesystemSourcedJsonValidator
+Validates the message against a JSON schema from the file system. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be loaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be read the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
 
 #### fireAndForget
 Publishes the AMQP message to a Rascal publication using the routing key defined in the context. If successful the middleware will return 202 "Accepted" and a transaction id corresponding to the message id
