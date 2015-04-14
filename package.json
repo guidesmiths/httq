@@ -28,6 +28,7 @@
     "hogan.js": "^3.0.2",
     "lodash": "^3.6.0",
     "request": "^2.55.0",
+    "safe-json-parse": "^4.0.0",
     "tv4": "^1.1.9",
     "tv4-formats": "^1.0.0"
   },
