@@ -14,6 +14,7 @@ describe('s3SourcedJsonValidator', function() {
 
     var server
     var middleware
+    var httq = {}
     var config = {
         s3: {
             bucket: 'httq-tests',
@@ -25,6 +26,7 @@ describe('s3SourcedJsonValidator', function() {
         var app = express()
         app.use(bodyParser.json())
         app.post('/', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
@@ -81,11 +83,12 @@ describe('s3SourcedJsonValidator', function() {
     })
 
     it('should respond with 500 when the primary schema cannot be downloaded', function(done) {
-        s3SourcedJsonValidator(config, {
+        httq = {
             message: {
                 schema: '/schemas/missing'
             }
-        }, function(err, _middleware) {
+        }
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -98,11 +101,12 @@ describe('s3SourcedJsonValidator', function() {
     })
 
     it('should respond with 500 when a referenced schema cannot be downloaded', function(done) {
-        s3SourcedJsonValidator(config, {
+        httq = {
             message: {
                 schema: '/schemas/complex-missing-ref.json'
             }
-        }, function(err, _middleware) {
+        }
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -116,7 +120,7 @@ describe('s3SourcedJsonValidator', function() {
 
     it('should pass successful messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: '/schemas/simple.json',
                 content: {
@@ -128,7 +132,7 @@ describe('s3SourcedJsonValidator', function() {
             }
         }
 
-        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -141,7 +145,7 @@ describe('s3SourcedJsonValidator', function() {
 
     it('should pass successful messages with complex schemas', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: '/schemas/complex.json',
                 content: {
@@ -159,7 +163,7 @@ describe('s3SourcedJsonValidator', function() {
             }
         }
 
-        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -172,7 +176,7 @@ describe('s3SourcedJsonValidator', function() {
 
     it('should reject invalid messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: '/schemas/simple.json',
                 content: {
@@ -184,7 +188,7 @@ describe('s3SourcedJsonValidator', function() {
             }
         }
 
-        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -199,7 +203,7 @@ describe('s3SourcedJsonValidator', function() {
 
     it('should cache schemas', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: '/schemas/simple.json',
                 content: {
@@ -211,7 +215,7 @@ describe('s3SourcedJsonValidator', function() {
             }
         }
 
-        s3SourcedJsonValidator(config, ctx, function(err, _middleware) {
+        s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             var first = {}

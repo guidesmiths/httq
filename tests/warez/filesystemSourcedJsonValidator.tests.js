@@ -11,11 +11,13 @@ describe('filesystemSourcedJsonValidator', function() {
 
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
         var app = express()
         app.use(bodyParser.json())
         app.post('/', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
@@ -41,11 +43,12 @@ describe('filesystemSourcedJsonValidator', function() {
     })
 
     it('should respond with 500 when the primary schema cannot be read', function(done) {
-        filesystemSourcedJsonValidator({}, {
+        httq = {
             message: {
                 schema: './tests/schemas/missing'
             }
-        }, function(err, _middleware) {
+        }
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -58,11 +61,12 @@ describe('filesystemSourcedJsonValidator', function() {
     })
 
     it('should respond with 500 when a referenced schema cannot be read', function(done) {
-        filesystemSourcedJsonValidator({}, {
+        httq = {
             message: {
                 schema: './tests/schemas/complex-missing-ref.json'
             }
-        }, function(err, _middleware) {
+        }
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -76,7 +80,7 @@ describe('filesystemSourcedJsonValidator', function() {
 
     it('should pass successful messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: './tests/schemas/simple.json',
                 content: {
@@ -88,7 +92,7 @@ describe('filesystemSourcedJsonValidator', function() {
             }
         }
 
-        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -101,7 +105,7 @@ describe('filesystemSourcedJsonValidator', function() {
 
     it('should pass successful messages with complex schemas', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: './tests/schemas/complex.json',
                 content: {
@@ -119,7 +123,7 @@ describe('filesystemSourcedJsonValidator', function() {
             }
         }
 
-        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
@@ -132,7 +136,7 @@ describe('filesystemSourcedJsonValidator', function() {
 
     it('should reject invalid messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: './tests/schemas/simple.json',
                 content: {
@@ -144,7 +148,7 @@ describe('filesystemSourcedJsonValidator', function() {
             }
         }
 
-        filesystemSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {

@@ -10,10 +10,12 @@ describe('requestPathToRoutingKey', function() {
 
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
         var app = express()
         server = app.get('/:foo/:bar/:baz', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).end() : res.status(204).end()
             })
@@ -26,15 +28,13 @@ describe('requestPathToRoutingKey', function() {
 
     it('should construct a routing key from the path', function(done) {
 
-        var ctx = {}
-
-        requestPathToRoutingKey({}, ctx, function(err, _middleware) {
+        requestPathToRoutingKey({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/1/2/3'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, '1.2.3')
+                assert.equal(httq.message.routingKey, '1.2.3')
                 done()
             })
         })
@@ -48,15 +48,13 @@ describe('requestPathToRoutingKey', function() {
             }
         }
 
-        var ctx = {}
-
-        requestPathToRoutingKey(config, ctx, function(err, _middleware) {
+        requestPathToRoutingKey(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/1/2/3'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, 'GET.1.2.3')
+                assert.equal(httq.message.routingKey, 'GET.1.2.3')
                 done()
             })
         })
@@ -70,15 +68,13 @@ describe('requestPathToRoutingKey', function() {
             }
         }
 
-        var ctx = {}
-
-        requestPathToRoutingKey(config, ctx, function(err, _middleware) {
+        requestPathToRoutingKey(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/1/2/3'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, '1.2.3.GET')
+                assert.equal(httq.message.routingKey, '1.2.3.GET')
                 done()
             })
         })
@@ -95,15 +91,13 @@ describe('requestPathToRoutingKey', function() {
             }
         }
 
-        var ctx = {}
-
-        requestPathToRoutingKey(config, ctx, function(err, _middleware) {
+        requestPathToRoutingKey(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/1/2/3'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, '1.2.3.requested')
+                assert.equal(httq.message.routingKey, '1.2.3.requested')
                 done()
             })
         })

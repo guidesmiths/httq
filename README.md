@@ -210,7 +210,7 @@ module.exports = function(config, ctx, next) {
 ### Provided Middleware
 
 #### requestToTemplateVars
-Extracts variables from the request and stores them in ctx.templateVars, e.g.
+Extracts variables from the request and stores them in req.httq.templateVars, e.g.
 ```js
 {
     templateVars: {
@@ -233,7 +233,7 @@ Extracts variables from the request and stores them in ctx.templateVars, e.g.
 These are typically usd when generating the routing key and message published to your AMQP broker.
 
 #### requestToRoutingKey
-Generates a routing key from the request by passing the templateVars through a hogan template. The routing key is stored in ctx.message.routingKey
+Generates a routing key from the request by passing the templateVars through a hogan template. The routing key is stored in req.httq.message.routingKey
 ```json
 {
     "requestToRoutingKey": {
@@ -260,7 +260,7 @@ You can map the request method to something more meaningful
 ```
 
 #### requestPathToRoutingKey
-Generates a routing key from the request by replacing slashes with full stops. The routing key is stored in ctx.message.routingKey. No parameters are required but you may optionall include the request method.
+Generates a routing key from the request by replacing slashes with full stops. The routing key is stored in req.httq.message.routingKey. No parameters are required but you may optionall include the request method.
 ```json
 {
     "requestPathToRoutingKey": {
@@ -277,16 +277,16 @@ Generates a routing key from the request by replacing slashes with full stops. T
 ```
 
 #### requestToMessage
-Generates AMQP message headers and content from the request. This is stored in ctx.message.headers and ctx.message.content. You can see an example of the generated message in step 4.
+Generates AMQP message headers and content from the request. This is stored in req.httq.message.headers and req.httq.message.content. You can see an example of the generated message in step 4.
 
 #### requestToMessageContent
-Generates AMQP message content from the request. A json document reprsenting the full request (url, params, headers, query parameters and body) is stored in ctx.message.content
+Generates AMQP message content from the request. A json document reprsenting the full request (url, params, headers, query parameters and body) is stored in req.httq.message.content
 
 #### requestToSchemaUrl
-Generates a schema url from the request by passing the templateVars through a hogan template. The routing key is stored in ctx.message.schema
+Generates a schema url from the request by passing the templateVars through a hogan template. The routing key is stored in req.httq.message.schema
 
 #### httpSourcedJsonValidator
-Validates the message against a JSON schema downloaded using http. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
+Validates the message against a JSON schema downloaded using http. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it req.httq.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors, e.g.
 ```json
 [
     {
@@ -315,7 +315,7 @@ Validates the message against a JSON schema downloaded using http. The validator
 ```
 
 ####s3SourcedJsonValidator
-Validates the message against a JSON schema from S3. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
+Validates the message against a JSON schema from S3. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it req.httq.message.schema and will be downloaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be downloaded the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
 
 The s3SourcedJsonValidator requires the following configuration
 ```json
@@ -328,7 +328,7 @@ The s3SourcedJsonValidator requires the following configuration
 ```
 
 #### filesystemSourcedJsonValidator
-Validates the message against a JSON schema from the file system. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it ctx.message.schema and will be loaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be read the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
+Validates the message against a JSON schema from the file system. The validator uses [tv4](https://github.com/geraintluff/tv4) and [tv4-formats](https://github.com/ikr/tv4-formats). The schema url must be set it req.httq.message.schema and will be loaded and cached (along with any referenced schemas) in during the request flow. If a schema cannot be read the middleware responds with 500. If validation succeeds the message will be decorated with an httq header giving the uri of the schema that the message was validated against. If validation fails, httq will respond with 400 'Bad Request' and a json document describing the errors as specified above.
 
 #### fireAndForget
 Publishes the AMQP message to a Rascal publication using the routing key defined in the context. If successful the middleware will return 202 "Accepted" and a transaction id corresponding to the message id

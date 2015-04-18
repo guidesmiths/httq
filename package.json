@@ -8,6 +8,7 @@
     "url": "git@github.com:guidesmiths/httq.git"
   },
   "scripts": {
+    "up": "docker-compose up",
     "test": "mocha --recursive tests"
   },
   "keywords": [

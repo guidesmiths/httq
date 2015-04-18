@@ -14,6 +14,7 @@ describe('fireAndForget', function() {
     var broker
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
 
@@ -59,6 +60,7 @@ describe('fireAndForget', function() {
             function(cb) {
                 var app = express()
                 server = app.get('/', function(req, res, next) {
+                    req.httq = httq
                     middleware(req, res, function(err) {
                         err ? res.status(500).end() : res.status(204).end()
                     })
@@ -84,8 +86,7 @@ describe('fireAndForget', function() {
             publication: 'p1'
         }
 
-        var ctx = {
-            broker: broker,
+        httq = {
             message: {
                 routingKey: 'foo.bar',
                 headers: {
@@ -104,7 +105,7 @@ describe('fireAndForget', function() {
             done()
         })
 
-        fireAndForget(config, ctx, function(err, _middleware) {
+        fireAndForget(config, { broker: broker }, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000'}, function(err, response, content) {

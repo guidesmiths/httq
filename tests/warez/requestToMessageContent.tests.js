@@ -11,11 +11,13 @@ describe('requestToMessageContent', function() {
 
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
         var app = express()
         app.use(bodyParser.json())
         server = app.post('/', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).end() : res.status(204).end()
             })
@@ -28,17 +30,16 @@ describe('requestToMessageContent', function() {
 
     it('should construct a message from the request', function(done) {
 
-        var ctx = {}
-        requestToMessageContent({}, ctx, function(err, _middleware) {
+        requestToMessageContent({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000?foo=1', headers: { 'bar': 2 }, json: { baz: 3 } }, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.ok(ctx.message.content.headers)
-                assert.equal(ctx.message.content.headers.bar, 2)
-                assert.ok(ctx.message.content.body)
-                assert.equal(ctx.message.content.body.baz, 3)
+                assert.ok(httq.message.content.headers)
+                assert.equal(httq.message.content.headers.bar, 2)
+                assert.ok(httq.message.content.body)
+                assert.equal(httq.message.content.body.baz, 3)
                 done()
             })
         })

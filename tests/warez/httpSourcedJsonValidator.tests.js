@@ -11,11 +11,13 @@ describe('httpSourcedJsonValidator', function() {
 
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
         var app = express()
         app.use(bodyParser.json())
         app.post('/', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).json({ error: err.message }) : res.status(204).end()
             })
@@ -42,11 +44,12 @@ describe('httpSourcedJsonValidator', function() {
     })
 
     it('should response with 500 when the primary schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
+        httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/missing'
             }
-        }, function(err, _middleware) {
+        }
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -59,11 +62,12 @@ describe('httpSourcedJsonValidator', function() {
     })
 
     it('should response with 500 when the primary schema url is invalid', function(done) {
-        httpSourcedJsonValidator({}, {
+        httq = {
             message: {
                 schema: 'invalid'
             }
-        }, function(err, _middleware) {
+        }
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -76,11 +80,12 @@ describe('httpSourcedJsonValidator', function() {
     })
 
     it('should response with 500 when a referenced schema cannot be downloaded', function(done) {
-        httpSourcedJsonValidator({}, {
+        httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/complex-missing-ref.json'
             }
-        }, function(err, _middleware) {
+        }
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000/', json: true, method: 'POST'}, function(err, response, body) {
@@ -94,7 +99,7 @@ describe('httpSourcedJsonValidator', function() {
 
     it('should pass successful messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/simple.json',
                 content: {
@@ -106,7 +111,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
@@ -119,7 +124,7 @@ describe('httpSourcedJsonValidator', function() {
 
     it('should pass successful messages with complex schemas', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/complex.json',
                 content: {
@@ -137,7 +142,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
@@ -150,7 +155,7 @@ describe('httpSourcedJsonValidator', function() {
 
     it('should reject invalid messages', function(done) {
 
-        var ctx = {
+        httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/simple.json',
                 content: {
@@ -162,7 +167,7 @@ describe('httpSourcedJsonValidator', function() {
             }
         }
 
-        httpSourcedJsonValidator({}, ctx, function(err, _middleware) {
+        httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {

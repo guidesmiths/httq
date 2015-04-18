@@ -10,10 +10,12 @@ describe('requestToRoutingKey', function() {
 
     var server
     var middleware
+    var httq = {}
 
     before(function(done) {
         var app = express()
         server = app.get('/', function(req, res, next) {
+            req.httq = httq
             middleware(req, res, function(err) {
                 err ? res.status(500).end() : res.status(204).end()
             })
@@ -30,7 +32,7 @@ describe('requestToRoutingKey', function() {
             template: '{{request.headers.foo}}.{{request.params.bar}}.{{request.query.baz}}.{{request.method}}'
         }
 
-        var ctx = {
+        httq = {
             templateVars: {
                 request: {
                     method: 'GET',
@@ -47,13 +49,13 @@ describe('requestToRoutingKey', function() {
             }
         }
 
-        requestToRoutingKey(config, ctx, function(err, _middleware) {
+        requestToRoutingKey(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, '1.2.3.GET')
+                assert.equal(httq.message.routingKey, '1.2.3.GET')
                 done()
             })
         })
@@ -70,7 +72,7 @@ describe('requestToRoutingKey', function() {
             }
         }
 
-        var ctx = {
+        httq = {
             templateVars: {
                 request: {
                     method: 'GET',
@@ -87,13 +89,13 @@ describe('requestToRoutingKey', function() {
             }
         }
 
-        requestToRoutingKey(config, ctx, function(err, _middleware) {
+        requestToRoutingKey(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
             request({url: 'http://localhost:3000'}, function(err, response, content) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
-                assert.equal(ctx.message.routingKey, '1.2.3.requested')
+                assert.equal(httq.message.routingKey, '1.2.3.requested')
                 done()
             })
         })
