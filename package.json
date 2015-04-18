@@ -1,6 +1,6 @@
 {
   "name": "httq",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Middleware for bridging HTTP and AMQP",
   "main": "index.js",
   "repository": {
