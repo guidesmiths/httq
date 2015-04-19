@@ -16,7 +16,7 @@ function init(broker, config, ctx, next) {
     ctx.broker = broker,
     ctx.warez = _.defaults(ctx.warez || {}, warez)
     ctx.errorHandler = ctx.errorHandler || function(err, details) {
-        consoler.error(format('Middleware: %s encountered and error', details.middleware, err))
+        consoler.error(format('Middleware: %s encountered an error', details.middleware, err))
     }
 
     configure(config, function(err, routeConfig) {
