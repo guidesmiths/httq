@@ -74,17 +74,16 @@ describe('httq', function() {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
 
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
+                broker.subscribe('s1', function(err, subscription) {
                     assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(message)
-                    assert.equal(message.fields.routingKey, 'api.library.v1.books.978-3-16-148410-0.loans.created')
-                    assert.equal(message.properties.messageId, body.txid)
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
+                    subscription.on('message', function(message, content, ackOrNack) {
+                        ackOrNack()
+                        subscription.cancel()
+                        assert.ok(message)
+                        assert.equal(message.fields.routingKey, 'api.library.v1.books.978-3-16-148410-0.loans.created')
+                        assert.equal(message.properties.messageId, body.txid)
+                        done()
+                    })
                 })
             })
         })
@@ -94,19 +93,18 @@ describe('httq', function() {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
 
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
+                broker.subscribe('s1', function(err, subscription) {
                     assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(content)
-                    assert.equal(content.url, '/api/library/v1/books/978-3-16-148410-0/loans?foo=1')
-                    assert.equal(content.query.foo, 1)
-                    assert.equal(content.headers.bar, 2)
-                    assert.equal(content.body.baz, 3)
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
+                    subscription.on('message', function(message, content, ackOrNack) {
+                        ackOrNack()
+                        subscription.cancel()
+                        assert.ok(content)
+                        assert.equal(content.url, '/api/library/v1/books/978-3-16-148410-0/loans?foo=1')
+                        assert.equal(content.query.foo, 1)
+                        assert.equal(content.headers.bar, 2)
+                        assert.equal(content.body.baz, 3)
+                        done()
+                    })
                 })
             })
         })
@@ -116,20 +114,19 @@ describe('httq', function() {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
 
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
+                broker.subscribe('s1', function(err, subscription) {
                     assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(message)
-                    assert.equal(message.fields.routingKey, 'library.v2.books.loans.POST')
-                    assert.equal(message.properties.messageId, body.txid)
-                    assert.equal(message.properties.headers.httq.url, '/api/library/v2/books/978-3-16-148410-0/loans?foo=1')
-                    assert.equal(message.properties.headers.httq.query.foo, 1)
-                    assert.equal(message.properties.headers.httq.headers.bar, 2)
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
+                    subscription.on('message', function(message, content, ackOrNack) {
+                        ackOrNack()
+                        subscription.cancel()
+                        assert.ok(message)
+                        assert.equal(message.fields.routingKey, 'library.v2.books.loans.POST')
+                        assert.equal(message.properties.messageId, body.txid)
+                        assert.equal(message.properties.headers.httq.url, '/api/library/v2/books/978-3-16-148410-0/loans?foo=1')
+                        assert.equal(message.properties.headers.httq.query.foo, 1)
+                        assert.equal(message.properties.headers.httq.headers.bar, 2)
+                        done()
+                    })
                 })
             })
         })
@@ -139,16 +136,15 @@ describe('httq', function() {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 202)
 
-                var consumerTag
-                broker.subscribe('s1', function(err, message, content, next) {
+                broker.subscribe('s1', function(err, subscription) {
                     assert.ifError(err)
-                    broker.unsubscribe('s1', consumerTag)
-                    assert.ok(content)
-                    assert.equal(content.foo, 1)
-                    done()
-                }, function(err, result) {
-                    assert.ifError(err)
-                    consumerTag = result.consumerTag
+                    subscription.on('message', function(message, content, ackOrNack) {
+                        ackOrNack()
+                        subscription.cancel()
+                        assert.ok(content)
+                        assert.equal(content.foo, 1)
+                        done()
+                    })
                 })
             })
         })

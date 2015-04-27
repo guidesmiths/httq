@@ -353,20 +353,6 @@ httq.init(broker, config.httq.book_loan_v1, {
 })
 ```
 
-## Handling Errors
-In most cases you should simply return next(err) and let your express default error handler deal with it. Where an httq provided middleware depends on a library that emits errors (e.g. Rascal) it will log details of the error to the console. If you would prefer a different behaviour, specify an alternative error handler when initialising httq.
-
-```js
-httq.init(broker, config.httq.book_loan_v1, {
-    errorHandler: errorHandler
-}, function(err, httqs) {
-    //...
-})
-
-function errorHandler(err, details) {
-    //...
-}
-```
 
 
 

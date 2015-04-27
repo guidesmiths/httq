@@ -9,7 +9,7 @@
   },
   "scripts": {
     "up": "docker-compose up",
-    "test": "mocha --recursive tests"
+    "test": "AWS_PROFILE=guidesmiths mocha --recursive tests"
   },
   "keywords": [
     "http",
@@ -38,7 +38,7 @@
     "body-parser": "^1.12.2",
     "express": "^4.12.3",
     "mocha": "^2.2.1",
-    "rascal": "^0.2.2",
+    "rascal": "^0.4.0",
     "request": "^2.55.0"
   }
 }

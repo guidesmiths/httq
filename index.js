@@ -15,9 +15,6 @@ function init(broker, config, ctx, next) {
     if (arguments.length === 3) return init(broker, config, {}, arguments[2])
     ctx.broker = broker,
     ctx.warez = _.defaults(ctx.warez || {}, warez)
-    ctx.errorHandler = ctx.errorHandler || function(err, details) {
-        consoler.error(format('Middleware: %s encountered an error', details.middleware, err))
-    }
 
     configure(config, function(err, routeConfig) {
         if (err) return next(err)

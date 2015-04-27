@@ -98,11 +98,13 @@ describe('fireAndForget', function() {
             }
         }
 
-        broker.subscribe('s1', function(err, message, content) {
-            if (err) return cb(err)
-            assert.equal(message.properties.headers.foo, 1)
-            assert.equal(content.bar, 2)
-            done()
+        broker.subscribe('s1', function(err, subscription) {
+            assert.ifError(err)
+            subscription.on('message', function(message, content) {
+                assert.equal(message.properties.headers.foo, 1)
+                assert.equal(content.bar, 2)
+                done()
+            })
         })
 
         fireAndForget(config, { broker: broker }, function(err, _middleware) {
