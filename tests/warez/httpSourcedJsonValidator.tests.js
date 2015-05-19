@@ -97,6 +97,31 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
+    it('should pass excluded messages', function(done) {
+
+        httq = {
+            message: {
+                schema: 'http://localhost:3000/schemas/ignore-me-please.json',
+                content: {
+                    body: {
+                        id: 1,
+                        type: 'book'
+                    }
+                }
+            }
+        }
+
+        httpSourcedJsonValidator({ excludes: ['ignore-me-please.json'] }, {}, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 204)
+                done()
+            })
+        })
+    })
+
     it('should pass successful messages', function(done) {
 
         httq = {
