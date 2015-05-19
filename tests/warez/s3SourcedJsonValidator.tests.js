@@ -123,19 +123,16 @@ describe('s3SourcedJsonValidator', function() {
         httq = {
             message: {
                 schema: '/schemas/simple.json',
-                content: {
-                    body: {
-                        id: 1,
-                        type: 'book'
-                    }
-                }
             }
         }
 
         s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
+            request({method: 'POST', url: 'http://localhost:3000', json: {
+                id: 1,
+                type: 'book'
+            } }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -147,26 +144,23 @@ describe('s3SourcedJsonValidator', function() {
 
         httq = {
             message: {
-                schema: '/schemas/complex.json',
-                content: {
-                    body: [
-                        {
-                            id: 1,
-                            type: 'book'
-                        },
-                        {
-                            id: 2,
-                            type: 'journal'
-                        }
-                    ]
-                }
+                schema: '/schemas/complex.json'
             }
         }
 
         s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
+            request({method: 'POST', url: 'http://localhost:3000', json: [
+                {
+                    id: 1,
+                    type: 'book'
+                },
+                {
+                    id: 2,
+                    type: 'journal'
+                }
+            ] }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 204)
                 done()
@@ -178,20 +172,17 @@ describe('s3SourcedJsonValidator', function() {
 
         httq = {
             message: {
-                schema: '/schemas/simple.json',
-                content: {
-                    body: {
-                        id: 'a',
-                        type: 'book'
-                    }
-                }
+                schema: '/schemas/simple.json'
             }
         }
 
         s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
-            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, body) {
+            request({method: 'POST', url: 'http://localhost:3000', json: {
+                id: 'a',
+                type: 'book'
+            } }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 400)
                 assert.equal(body.length, 1)
