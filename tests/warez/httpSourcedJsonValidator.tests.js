@@ -43,7 +43,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should response with 500 when the primary schema cannot be downloaded', function(done) {
+    it('should respond with 500 when the primary schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/missing'
@@ -61,7 +61,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should response with 500 when the primary schema url is invalid', function(done) {
+    it('should respond with 500 when the primary schema url is invalid', function(done) {
         httq = {
             message: {
                 schema: 'invalid'
@@ -79,7 +79,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should response with 500 when a referenced schema cannot be downloaded', function(done) {
+    it('should respond with 500 when a referenced schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/complex-missing-ref.json'
