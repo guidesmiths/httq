@@ -145,6 +145,7 @@ describe('filesystemSourcedJsonValidator', function() {
             } }, function(err, response, body) {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 400)
+                assert.equal(response.headers['content-type'], 'application/json; charset=utf-8')
                 assert.equal(body.length, 1)
                 assert.equal(body[0].message, 'Invalid type: string (expected number)')
                 done()
