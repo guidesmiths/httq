@@ -30,7 +30,7 @@ describe('httpSourcedJsonValidator', function() {
         server ? server.close(done) : done()
     })
 
-    it('should respond with 500 when the primary schema is not specified', function(done) {
+    it('should error when the primary schema is not specified', function(done) {
         httpSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
@@ -43,7 +43,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when the primary schema cannot be downloaded', function(done) {
+    it('should error when the primary schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/missing'
@@ -61,7 +61,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when the primary schema url is invalid', function(done) {
+    it('should error when the primary schema url is invalid', function(done) {
         httq = {
             message: {
                 schema: 'invalid'
@@ -79,7 +79,7 @@ describe('httpSourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when a referenced schema cannot be downloaded', function(done) {
+    it('should error when a referenced schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: 'http://localhost:3000/schemas/complex-missing-ref.json'
@@ -92,6 +92,31 @@ describe('httpSourcedJsonValidator', function() {
                 assert.ifError(err)
                 assert.equal(response.statusCode, 500)
                 assert.equal(body.error, 'Schema download from: http://localhost:3000/schemas/missing failed with status: 404')
+                done()
+            })
+        })
+    })
+
+    it('should pass excluded messages', function(done) {
+
+        httq = {
+            message: {
+                schema: 'http://localhost:3000/schemas/ignore-me-please.json',
+                content: {
+                    body: {
+                        id: 1,
+                        type: 'book'
+                    }
+                }
+            }
+        }
+
+        httpSourcedJsonValidator({ excludes: ['ignore-me-please.json'] }, {}, function(err, _middleware) {
+            assert.ifError(err)
+            middleware = _middleware
+            request({method: 'POST', url: 'http://localhost:3000', json: true }, function(err, response, content) {
+                assert.ifError(err)
+                assert.equal(response.statusCode, 204)
                 done()
             })
         })

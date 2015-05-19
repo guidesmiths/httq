@@ -69,7 +69,7 @@ describe('s3SourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when the primary schema is not specified', function(done) {
+    it('should error when the primary schema is not specified', function(done) {
         s3SourcedJsonValidator(config, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
@@ -82,7 +82,7 @@ describe('s3SourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when the primary schema cannot be downloaded', function(done) {
+    it('should error when the primary schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: '/schemas/missing'
@@ -100,7 +100,7 @@ describe('s3SourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when a referenced schema cannot be downloaded', function(done) {
+    it('should error when a referenced schema cannot be downloaded', function(done) {
         httq = {
             message: {
                 schema: '/schemas/complex-missing-ref.json'

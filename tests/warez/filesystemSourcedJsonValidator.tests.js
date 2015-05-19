@@ -7,7 +7,7 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var filesystemSourcedJsonValidator = require('../..').warez.filesystemSourcedJsonValidator
 
-describe('filesystemSourcedJsonValidator', function() {
+describe.only('filesystemSourcedJsonValidator', function() {
 
     var server
     var middleware
@@ -29,7 +29,7 @@ describe('filesystemSourcedJsonValidator', function() {
         server ? server.close(done) : done()
     })
 
-    it('should respond with 500 when the primary schema is not specified', function(done) {
+    it('should error when the primary schema is not specified', function(done) {
         filesystemSourcedJsonValidator({}, {}, function(err, _middleware) {
             assert.ifError(err)
             middleware = _middleware
@@ -42,7 +42,7 @@ describe('filesystemSourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when the primary schema cannot be read', function(done) {
+    it('should error when the primary schema cannot be read', function(done) {
         httq = {
             message: {
                 schema: './tests/schemas/missing'
@@ -60,7 +60,7 @@ describe('filesystemSourcedJsonValidator', function() {
         })
     })
 
-    it('should respond with 500 when a referenced schema cannot be read', function(done) {
+    it('should error when a referenced schema cannot be read', function(done) {
         httq = {
             message: {
                 schema: './tests/schemas/complex-missing-ref.json'
